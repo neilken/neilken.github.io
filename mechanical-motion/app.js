@@ -156,11 +156,12 @@
   function drawInputOutput(t) {
     const a=t*Math.PI*2, crankAngle=-a, cx=328, cy=232, r=75;
     const [px,py]=pointOnCircle(cx,cy,r,crankAngle); const sliderX=570 + Math.cos(a)*88;
-    return `${labelBox(55,52,160,"Input: rotary motor", "#d96d33")}${labelBox(655,52,175,"Output: reciprocating piston", "#367a5a")}
-      <circle class="machine-metal" cx="174" cy="230" r="72"/><circle class="input-color" cx="174" cy="230" r="22"/><line class="machine-line" x1="174" y1="230" x2="174" y2="161" transform="rotate(${a*360} 174 230)"/><circle class="machine-accent" cx="174" cy="161" r="14" transform="rotate(${a*360} 174 230)"/>
-      ${arrow(250,230,286,230,"motion enters")}<circle class="machine-fill" cx="${cx}" cy="${cy}" r="90"/>${gear(cx,cy,75,a,"machine-accent")}<circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>
-      <circle class="input-color" cx="${px}" cy="${py}" r="13"/>${line(px,py,sliderX,232)}<rect class="output-color" x="${sliderX-30}" y="190" width="60" height="84" rx="7"/>${line(495,175,495,290,"support")}${line(650,175,650,290,"support")}${line(475,180,670,180,"ground")}${line(475,290,670,290,"ground")}${arrow(700,232,815,232,"output moves back and forth")}
-      ${text(174,350,"driver", "diagram-label", "middle")}${text(328,350,"mechanism", "diagram-label", "middle")}${text(570,350,"driven part", "diagram-label", "middle")}`;
+    const rotationDegrees = a * 180 / Math.PI;
+    return `${labelBox(42,52,188,"Input: rotary motor shaft", "#d96d33")}${labelBox(646,52,190,"Output: reciprocating piston", "#367a5a")}
+      <circle class="machine-metal" cx="174" cy="230" r="72"/><circle class="input-color" cx="174" cy="230" r="22"/><line class="machine-line" x1="174" y1="230" x2="174" y2="161" transform="rotate(${rotationDegrees} 174 230)"/><circle class="machine-accent" cx="174" cy="161" r="14" transform="rotate(${rotationDegrees} 174 230)"/>
+      ${line(246,230,cx,230,"machine-line")}<circle class="machine-fill" cx="${cx}" cy="${cy}" r="90"/><line class="machine-line" x1="${cx}" y1="${cy}" x2="${px}" y2="${py}"/><circle class="input-color" cx="${px}" cy="${py}" r="13"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>
+      ${line(px,py,sliderX,232)}<rect class="output-color" x="${sliderX-30}" y="190" width="60" height="84" rx="7"/>${line(495,175,495,290,"support")}${line(650,175,650,290,"support")}${line(475,180,670,180,"ground")}${line(475,290,670,290,"ground")}${arrow(700,232,815,232,"output moves back and forth")}
+      ${text(250,126,"same shaft → same direction and speed", "diagram-tiny","middle")}${text(174,350,"driver: motor", "diagram-label", "middle")}${text(328,350,"mechanism: crank and slider", "diagram-label", "middle")}${text(570,350,"driven part: piston", "diagram-label", "middle")}`;
   }
 
   function drawGears(t) {
