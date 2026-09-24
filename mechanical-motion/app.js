@@ -88,7 +88,7 @@
   const statusText = document.getElementById("statusText");
   let active = topics[0];
   let running = true;
-  let speedFactor = 1;
+  let speedFactor = 0.5;
   let startTime = performance.now();
   let pausedAt = 0;
 
