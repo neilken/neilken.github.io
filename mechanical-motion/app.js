@@ -154,7 +154,9 @@
   }
 
   function drawInputOutput(t) {
-    const a=t*Math.PI*2, crankAngle=-a, cx=328, cy=232, r=75;
+    // The motor shaft and crank are directly connected, so they rotate
+    // at the same speed and in the same direction.
+    const a=t*Math.PI*2, crankAngle=a, cx=328, cy=232, r=75;
     const [px,py]=pointOnCircle(cx,cy,r,crankAngle); const sliderX=570 + Math.cos(a)*88;
     const rotationDegrees = a * 180 / Math.PI;
     return `${labelBox(42,52,188,"Input: rotary motor shaft", "#d96d33")}${labelBox(646,52,190,"Output: reciprocating piston", "#367a5a")}
@@ -184,12 +186,18 @@
 
   function drawLiftingPulley(t) {
     const phase = Math.sin(t*Math.PI*2);
-    const loadY=220 - phase*20, handY=300 + phase*40;
-    return `${labelBox(55,48,178,"Input: pull rope down", "#d96d33")}${labelBox(665,48,165,"Output: load rises", "#367a5a")}
-      ${line(205,100,760,100,"support")}<circle class="machine-metal" cx="680" cy="100" r="45"/><circle class="machine-metal" cx="445" cy="${loadY}" r="45"/>
-      <path d="M 400 100 L 400 ${loadY} A 45 45 0 0 0 490 ${loadY} L 490 100 L 635 100 A 45 45 0 0 0 725 100 L 725 ${handY}" fill="none" stroke="#49606d" stroke-width="10" stroke-linecap="round"/>
-      <rect class="output-color" x="385" y="${loadY+47}" width="120" height="76" rx="6"/>${text(445,loadY+93,"LOAD","diagram-small","middle")}<circle class="input-color" cx="725" cy="${handY}" r="15"/>
-      ${text(445,389,"Two rope segments support the movable pulley.","diagram-small","middle")}${text(445,416,"The hand moves twice as far as the load in this ideal 2:1 system.","diagram-tiny","middle")}`;
+    const loadY=250 - phase*22, handY=295 + phase*44;
+    const movingX=520, movingRadius=45, fixedX=610, fixedY=130, fixedRadius=45;
+    const leftRopeX=movingX-movingRadius, rightRopeX=movingX+movingRadius, freeRopeX=fixedX+fixedRadius;
+    return `${labelBox(48,48,176,"Input: pull rope down", "#d96d33")}${labelBox(656,48,185,"Output: load rises", "#367a5a")}
+      ${line(235,80,760,80,"support")}<rect x="${leftRopeX-15}" y="93" width="30" height="${loadY-98}" rx="12" fill="#d8edf7"/><rect x="${rightRopeX-15}" y="${fixedY+10}" width="30" height="${loadY-fixedY-6}" rx="12" fill="#d8edf7"/>
+      <circle class="machine-metal" cx="${fixedX}" cy="${fixedY}" r="${fixedRadius}"/><circle class="machine-metal" cx="${movingX}" cy="${loadY}" r="${movingRadius}"/>
+      <path d="M ${leftRopeX} 80 L ${leftRopeX} ${loadY} A ${movingRadius} ${movingRadius} 0 0 0 ${rightRopeX} ${loadY} L ${rightRopeX} ${fixedY} A ${fixedRadius} ${fixedRadius} 0 0 0 ${freeRopeX} ${fixedY} L ${freeRopeX} ${handY}" fill="none" stroke="#755235" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle class="machine-accent" cx="${leftRopeX}" cy="80" r="9"/><circle class="machine-fill" cx="${fixedX}" cy="${fixedY}" r="11"/><circle class="machine-fill" cx="${movingX}" cy="${loadY}" r="11"/><rect class="output-color" x="${movingX-60}" y="${loadY+47}" width="120" height="76" rx="6"/>${text(movingX,loadY+93,"LOAD","diagram-small","middle")}<circle class="input-color" cx="${freeRopeX}" cy="${handY}" r="15"/>
+      ${text(leftRopeX-17,113,"1. anchored end", "diagram-small","end")}${text(698,168,"fixed pulley", "diagram-small")}${text(377,loadY+8,"movable pulley", "diagram-small","end")}${text(freeRopeX+10,handY-10,"free end", "diagram-small")}
+      ${arrow(365,loadY+31,365,loadY-34,"2. load rises 1 unit")}${arrow(freeRopeX+55,handY-90,freeRopeX+55,handY-25,"3. pull down 2 units")}
+      <path d="M ${leftRopeX-10} 102 L ${leftRopeX-38} 102 L ${leftRopeX-38} ${loadY-25} M ${leftRopeX-38} ${loadY-25} L ${rightRopeX+18} ${loadY-25} M ${rightRopeX+18} ${loadY-25} L ${rightRopeX+18} 151" fill="none" stroke="#1f6e9a" stroke-width="3" stroke-dasharray="5 5"/>
+      ${text(420,178,"2 supporting rope segments", "diagram-small","middle")}${text(455,398,"The fixed pulley changes the pull direction; the movable pulley lifts with the load.","diagram-small","middle")}${text(455,426,"In this ideal 2:1 system: pull 2 units of rope down → the load rises 1 unit.","diagram-tiny","middle")}`;
   }
 
   function drawCrankSlider(t) {
