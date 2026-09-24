@@ -138,14 +138,13 @@
 
   function drawMotionTypes(t) {
     const a = t * Math.PI * 2;
-    const x = 145 + Math.sin(a) * 75;
     const r = 51;
-    const [rx, ry] = pointOnCircle(408, 183, r, -a);
+    const linearX = 350 + ((t * .42) % 1) * 120;
     const y = 325 + Math.sin(a) * 48;
-    const angle = -0.62 + Math.sin(a) * .72;
+    const angle = Math.sin(a) * .72;
     return `${text(150,54,"Rotary", "diagram-label", "middle")}${text(410,54,"Linear", "diagram-label", "middle")}${text(650,54,"Reciprocating", "diagram-label", "middle")}${text(800,54,"Oscillating", "diagram-label", "middle")}
       <circle class="machine-fill" cx="150" cy="180" r="67"/><line class="machine-line" x1="150" y1="180" x2="150" y2="105" transform="rotate(${a*180/Math.PI} 150 180)"/><circle class="input-color" cx="150" cy="105" r="13" transform="rotate(${a*180/Math.PI} 150 180)"/>${text(150,290,"turns around an axis","diagram-tiny","middle")}
-      ${line(350,183,470,183,"motion-path")}${arrow(350,183,470,183,"straight path")}<circle class="input-color" cx="${rx}" cy="${ry}" r="14"/>${text(410,290,"moves one direction","diagram-tiny","middle")}
+      ${line(350,183,470,183,"motion-path")}${arrow(350,183,470,183,"straight path")}<circle class="input-color" cx="${linearX}" cy="183" r="14"/>${text(410,290,"moves one direction","diagram-tiny","middle")}
       ${line(580,325,720,325,"motion-path")}<circle class="input-color" cx="${650 + Math.sin(a)*70}" cy="325" r="14"/>${text(650,390,"repeats along a line","diagram-tiny","middle")}
       <line class="support" x1="800" y1="125" x2="800" y2="165"/><path class="motion-path" d="M 720 310 A 140 140 0 0 1 880 310"/><line class="machine-line" x1="800" y1="165" x2="${800 + Math.sin(angle)*122}" y2="${165 + Math.cos(angle)*122}"/><circle class="input-color" cx="${800 + Math.sin(angle)*122}" cy="${165 + Math.cos(angle)*122}" r="15"/>${text(800,390,"repeats through an arc","diagram-tiny","middle")}`;
   }
@@ -171,20 +170,21 @@
 
   function drawBeltDrive(t) {
     const a=t*Math.PI*2, c1=[260,225],c2=[590,225], r1=72,r2=112;
+    const driverAngle=a*2, outputAngle=driverAngle*r1/r2;
     return `${labelBox(115,48,155,"Input pulley", "#d96d33")}${labelBox(625,48,160,"Output pulley", "#367a5a")}
       <path d="M ${c1[0]} ${c1[1]-r1} L ${c2[0]} ${c2[1]-r2} A ${r2} ${r2} 0 0 1 ${c2[0]} ${c2[1]+r2} L ${c1[0]} ${c1[1]+r1} A ${r1} ${r1} 0 0 1 ${c1[0]} ${c1[1]-r1}" fill="none" stroke="#506873" stroke-width="22"/>
-      <circle class="input-color" cx="${c1[0]}" cy="${c1[1]}" r="${r1}"/><circle class="output-color" cx="${c2[0]}" cy="${c2[1]}" r="${r2}"/><line class="machine-line" x1="${c1[0]}" y1="${c1[1]}" x2="${c1[0]}" y2="${c1[1]-r1+10}" transform="rotate(${a*360} ${c1[0]} ${c1[1]})"/><line class="machine-line" x1="${c2[0]}" y1="${c2[1]}" x2="${c2[0]}" y2="${c2[1]-r2+10}" transform="rotate(${a*360} ${c2[0]} ${c2[1]})"/>
-      ${text(425,365,"Open belt: both pulleys rotate in the same direction.","diagram-small","middle")}${text(425,397,"A smaller output pulley would spin faster; a larger one would provide more torque.","diagram-tiny","middle")}`;
+      <circle class="input-color" cx="${c1[0]}" cy="${c1[1]}" r="${r1}"/><circle class="output-color" cx="${c2[0]}" cy="${c2[1]}" r="${r2}"/><line class="machine-line" x1="${c1[0]}" y1="${c1[1]}" x2="${c1[0]}" y2="${c1[1]-r1+10}" transform="rotate(${driverAngle*180/Math.PI} ${c1[0]} ${c1[1]})"/><line class="machine-line" x1="${c2[0]}" y1="${c2[1]}" x2="${c2[0]}" y2="${c2[1]-r2+10}" transform="rotate(${outputAngle*180/Math.PI} ${c2[0]} ${c2[1]})"/>
+      ${text(425,365,"Open belt: both pulleys rotate in the same direction.","diagram-small","middle")}${text(425,397,"Because the output pulley is larger, it turns more slowly.","diagram-tiny","middle")}`;
   }
 
   function drawLiftingPulley(t) {
-    const y=175 + Math.sin(t*Math.PI*2)*28, handY=340 + Math.sin(t*Math.PI*2)*55;
+    const phase = Math.sin(t*Math.PI*2);
+    const loadY=220 - phase*20, handY=300 + phase*40;
     return `${labelBox(55,48,178,"Input: pull rope down", "#d96d33")}${labelBox(665,48,165,"Output: load rises", "#367a5a")}
-      ${line(155,110,695,110,"support")}<circle class="machine-metal" cx="310" cy="155" r="43"/><circle class="machine-metal" cx="500" cy="${y}" r="43"/>
-      <path d="M 310 112 L 310 ${y} A 43 43 0 0 0 500 ${y} L 500 112" fill="none" stroke="#49606d" stroke-width="10"/>
-      <path d="M 267 155 A 43 43 0 0 0 310 198 L 310 ${handY}" fill="none" stroke="#49606d" stroke-width="10"/>
-      <rect class="output-color" x="443" y="${y+44}" width="114" height="80" rx="6"/>${text(500,y+92,"LOAD","diagram-small","middle")}<circle class="input-color" cx="310" cy="${handY}" r="15"/>
-      ${arrow(250,382,250,320,"pull farther")}${arrow(590,y+135,590,y+92,"load rises less")}${text(450,413,"More supporting rope segments reduce force, but require more rope distance.","diagram-small","middle")}`;
+      ${line(205,100,760,100,"support")}<circle class="machine-metal" cx="680" cy="100" r="45"/><circle class="machine-metal" cx="445" cy="${loadY}" r="45"/>
+      <path d="M 400 100 L 400 ${loadY} A 45 45 0 0 0 490 ${loadY} L 490 100 L 635 100 A 45 45 0 0 0 725 100 L 725 ${handY}" fill="none" stroke="#49606d" stroke-width="10" stroke-linecap="round"/>
+      <rect class="output-color" x="385" y="${loadY+47}" width="120" height="76" rx="6"/>${text(445,loadY+93,"LOAD","diagram-small","middle")}<circle class="input-color" cx="725" cy="${handY}" r="15"/>
+      ${text(445,389,"Two rope segments support the movable pulley.","diagram-small","middle")}${text(445,416,"The hand moves twice as far as the load in this ideal 2:1 system.","diagram-tiny","middle")}`;
   }
 
   function drawCrankSlider(t) {
@@ -196,18 +196,19 @@
   }
 
   function drawCamFollower(t) {
-    const a=t*Math.PI*2, lift=(Math.sin(a)+1)*52, cx=315,cy=265;
-    const points=[]; for(let i=0;i<80;i++){const theta=a+i*Math.PI*2/80;const rr=82+28*Math.cos(i*Math.PI*4/80);points.push(`${cx+Math.cos(theta)*rr},${cy+Math.sin(theta)*rr}`);} 
+    const a=t*Math.PI*2, cx=315,cy=270;
+    const points=[]; for(let i=0;i<80;i++){const theta=i*Math.PI*2/80;const rr=78+28*Math.cos(theta-a);points.push(`${cx+Math.cos(theta)*rr},${cy+Math.sin(theta)*rr}`);}
+    const topRadius=78+28*Math.cos(-Math.PI/2-a), contactY=cy-topRadius, followerTop=contactY-104;
     return `${labelBox(100,48,165,"Input: rotary cam", "#d96d33")}${labelBox(627,48,182,"Output: follower rises", "#367a5a")}
-      <polygon class="input-color" points="${points.join(" ")}"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="17"/><rect class="output-color" x="${cx-26}" y="${111-lift}" width="52" height="125" rx="5"/>${line(cx,111-lift,cx,75,"machine-line")}${line(535,104,535,315,"support")}${line(355,315,725,315,"ground")}
-      ${arrow(655,290,655,120,"follower moves up and down")}${text(470,384,"The cam's changing shape controls the follower's motion.","diagram-small","middle")}`;
+      <polygon class="input-color" points="${points.join(" ")}"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="17"/><rect class="output-color" x="${cx-27}" y="${followerTop}" width="54" height="104" rx="5"/>${line(cx,followerTop,cx,55,"machine-line")}${line(535,104,535,315,"support")}${line(355,315,725,315,"ground")}
+      ${arrow(655,290,655,120,"follower moves up and down")}${text(470,384,"The rotating cam stays in contact with the follower.","diagram-small","middle")}`;
   }
 
   function drawLinkage(t) {
-    const a=t*Math.PI*2, cx=210,cy=245,r=64,[pinX,pinY]=pointOnCircle(cx,cy,r,a); const jointX=430+(pinX-cx)*.5,jointY=233+(pinY-cy)*.5; const tipAngle=-.8+Math.sin(a)*.62; const tipX=705+Math.cos(tipAngle)*-135,tipY=262+Math.sin(tipAngle)*135;
+    const a=t*Math.PI*2, cx=210,cy=245,r=58,[pinX,pinY]=pointOnCircle(cx,cy,r,a); const pivotX=690,pivotY=268; const wiperAngle=-2.12+Math.sin(a)*.48; const jointX=pivotX+Math.cos(wiperAngle)*88,jointY=pivotY+Math.sin(wiperAngle)*88; const tipX=pivotX+Math.cos(wiperAngle)*175,tipY=pivotY+Math.sin(wiperAngle)*175;
     return `${labelBox(58,48,165,"Input: rotary motor", "#d96d33")}${labelBox(632,48,195,"Output: wiper oscillates", "#367a5a")}
-      <circle class="machine-metal" cx="${cx}" cy="${cy}" r="73"/><circle class="input-color" cx="${pinX}" cy="${pinY}" r="14"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>${line(pinX,pinY,jointX,jointY)}${line(jointX,jointY,705,262)}<circle class="machine-accent" cx="${jointX}" cy="${jointY}" r="15"/>${line(705,262,tipX,tipY,"machine-line")}<circle class="machine-metal" cx="705" cy="262" r="18"/><path class="motion-path" d="M 595 148 A 165 165 0 0 1 606 370"/>
-      ${text(418,393,"connected bars and pivots = linkage", "diagram-small","middle")}`;
+      <circle class="machine-metal" cx="${cx}" cy="${cy}" r="68"/><circle class="input-color" cx="${pinX}" cy="${pinY}" r="14"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>${line(pinX,pinY,jointX,jointY)}<circle class="machine-accent" cx="${jointX}" cy="${jointY}" r="15"/>${line(pivotX,pivotY,tipX,tipY,"machine-line")}<circle class="machine-metal" cx="${pivotX}" cy="${pivotY}" r="18"/><path class="motion-path" d="M 530 118 A 220 220 0 0 1 560 390"/>
+      ${text(450,393,"The connecting rod turns the pivoted wiper arm.", "diagram-small","middle")}`;
   }
 
   function drawTorque(t) {
@@ -220,7 +221,7 @@
   }
 
   function drawDesignChoice(t) {
-    const a=t*Math.PI*2, c1=[252,230],c2=[420,230], c3=[600,230],c4=[750,230];
+    const a=t*Math.PI*2, c1=[252,230],c2=[412,230], c3=[590,230],c4=[750,230];
     return `${text(335,56,"Design A: lift a heavy load", "diagram-label","middle")}${text(675,56,"Design B: spin quickly", "diagram-label","middle")}
       ${gear(c1[0],c1[1],52,a*3,"input-color")}${gear(c2[0],c2[1],108,-a,"output-color")}${gear(c3[0],c3[1],108,a,"input-color")}${gear(c4[0],c4[1],52,-a*3,"output-color")}
       <rect class="callout" x="152" y="360" width="368" height="55" rx="5"/>${text(336,385,"small driver → large driven", "diagram-small","middle")}${text(336,406,"slower output · greater torque", "diagram-tiny","middle")}
