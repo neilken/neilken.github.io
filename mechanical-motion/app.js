@@ -142,11 +142,15 @@
     const linearX = 350 + ((t * .42) % 1) * 120;
     const y = 325 + Math.sin(a) * 48;
     const angle = Math.sin(a) * .72;
+    const swingRadius = 122;
+    const swingLeftX = 800 - Math.sin(.72) * swingRadius;
+    const swingY = 165 + Math.cos(.72) * swingRadius;
+    const swingRightX = 800 + Math.sin(.72) * swingRadius;
     return `${text(150,54,"Rotary", "diagram-label", "middle")}${text(410,54,"Linear", "diagram-label", "middle")}${text(650,54,"Reciprocating", "diagram-label", "middle")}${text(800,54,"Oscillating", "diagram-label", "middle")}
       <circle class="machine-fill" cx="150" cy="180" r="67"/><line class="machine-line" x1="150" y1="180" x2="150" y2="105" transform="rotate(${a*180/Math.PI} 150 180)"/><circle class="input-color" cx="150" cy="105" r="13" transform="rotate(${a*180/Math.PI} 150 180)"/>${text(150,290,"turns around an axis","diagram-tiny","middle")}
       ${line(350,183,470,183,"motion-path")}${arrow(350,183,470,183,"straight path")}<circle class="input-color" cx="${linearX}" cy="183" r="14"/>${text(410,290,"moves one direction","diagram-tiny","middle")}
       ${line(580,325,720,325,"motion-path")}<circle class="input-color" cx="${650 + Math.sin(a)*70}" cy="325" r="14"/>${text(650,390,"repeats along a line","diagram-tiny","middle")}
-      <line class="support" x1="800" y1="125" x2="800" y2="165"/><path class="motion-path" d="M 720 310 A 140 140 0 0 1 880 310"/><line class="machine-line" x1="800" y1="165" x2="${800 + Math.sin(angle)*122}" y2="${165 + Math.cos(angle)*122}"/><circle class="input-color" cx="${800 + Math.sin(angle)*122}" cy="${165 + Math.cos(angle)*122}" r="15"/>${text(800,390,"repeats through an arc","diagram-tiny","middle")}`;
+      <line class="support" x1="800" y1="125" x2="800" y2="165"/><path class="motion-path" d="M ${swingLeftX} ${swingY} A ${swingRadius} ${swingRadius} 0 0 1 ${swingRightX} ${swingY}"/><line class="machine-line" x1="800" y1="165" x2="${800 + Math.sin(angle)*swingRadius}" y2="${165 + Math.cos(angle)*swingRadius}"/><circle class="input-color" cx="${800 + Math.sin(angle)*swingRadius}" cy="${165 + Math.cos(angle)*swingRadius}" r="15"/>${text(800,390,"repeats through an arc","diagram-tiny","middle")}`;
   }
 
   function drawInputOutput(t) {
