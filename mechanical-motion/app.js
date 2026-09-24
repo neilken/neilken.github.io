@@ -167,7 +167,7 @@
   function drawGears(t) {
     const a=t*Math.PI*2, small=60, big=110, c1=[285,230],c2=[455,230], teeth1=10,teeth2=30;
     return `${labelBox(105,48,180,"Driving gear: 10 teeth", "#d96d33")}${labelBox(585,48,196,"Driven gear: 30 teeth", "#367a5a")}
-      ${gear(c1[0],c1[1],small,a*3,"input-color")}${gear(c2[0],c2[1],big,-a,"output-color")}${text(c1[0],c1[1]+8,"10", "diagram-label","middle")}${text(c2[0],c2[1]+8,"30", "diagram-label","middle")}
+      ${gear(c1[0],c1[1],small,a*1.2,"input-color")}${gear(c2[0],c2[1],big,-a*.4,"output-color")}${text(c1[0],c1[1]+8,"10", "diagram-label","middle")}${text(c2[0],c2[1]+8,"30", "diagram-label","middle")}
       ${arrow(150,354,338,354,"3 driver turns")} ${arrow(530,354,591,354,"1 output turn")}
       <rect class="callout" x="610" y="170" width="220" height="123" rx="6"/>${text(625,200,"Gear ratio = 30 ÷ 10 = 3:1", "diagram-small")}${text(625,231,"Output speed: slower", "diagram-small")}${text(625,261,"Output torque: greater", "diagram-small")}
       ${text(365,430,"Meshing gears turn in opposite directions.","diagram-small","middle")}`;
@@ -175,7 +175,7 @@
 
   function drawBeltDrive(t) {
     const a=t*Math.PI*2, c1=[260,225],c2=[590,225], r1=72,r2=112;
-    const driverAngle=a*2, outputAngle=driverAngle*r1/r2;
+    const driverAngle=a*.8, outputAngle=driverAngle*r1/r2;
     return `${labelBox(115,48,155,"Input pulley", "#d96d33")}${labelBox(625,48,160,"Output pulley", "#367a5a")}
       <path d="M ${c1[0]} ${c1[1]-r1} L ${c2[0]} ${c2[1]-r2} A ${r2} ${r2} 0 0 1 ${c2[0]} ${c2[1]+r2} L ${c1[0]} ${c1[1]+r1} A ${r1} ${r1} 0 0 1 ${c1[0]} ${c1[1]-r1}" fill="none" stroke="#506873" stroke-width="22"/>
       <circle class="input-color" cx="${c1[0]}" cy="${c1[1]}" r="${r1}"/><circle class="output-color" cx="${c2[0]}" cy="${c2[1]}" r="${r2}"/><line class="machine-line" x1="${c1[0]}" y1="${c1[1]}" x2="${c1[0]}" y2="${c1[1]-r1+10}" transform="rotate(${driverAngle*180/Math.PI} ${c1[0]} ${c1[1]})"/><line class="machine-line" x1="${c2[0]}" y1="${c2[1]}" x2="${c2[0]}" y2="${c2[1]-r2+10}" transform="rotate(${outputAngle*180/Math.PI} ${c2[0]} ${c2[1]})"/>
