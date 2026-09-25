@@ -204,8 +204,8 @@
       <circle class="machine-metal" cx="${fixedX}" cy="${fixedY}" r="${fixedRadius}"/><circle class="machine-metal" cx="${movingX}" cy="${loadY}" r="${movingRadius}"/>
       <path d="M ${leftRopeX} 80 L ${leftRopeX} ${loadY} A ${movingRadius} ${movingRadius} 0 0 0 ${rightRopeX} ${loadY} L ${rightRopeX} ${fixedY} A ${fixedRadius} ${fixedRadius} 0 0 0 ${freeRopeX} ${fixedY} L ${freeRopeX} ${handY}" fill="none" stroke="#755235" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
       <circle class="machine-accent" cx="${leftRopeX}" cy="80" r="9"/><circle class="machine-fill" cx="${fixedX}" cy="${fixedY}" r="11"/><circle class="machine-fill" cx="${movingX}" cy="${loadY}" r="11"/><rect class="output-color" x="${movingX-60}" y="${loadY+47}" width="120" height="76" rx="6"/>${text(movingX,loadY+93,"LOAD","diagram-small","middle")}<circle class="input-color" cx="${freeRopeX}" cy="${handY}" r="15"/>
-      ${text(leftRopeX,113,"anchored end", "diagram-tiny","middle")}${text(676,174,"fixed pulley", "diagram-small")}${text(362,loadY+8,"movable pulley", "diagram-small","end")}${text(freeRopeX+9,handY-10,"free end", "diagram-tiny")}
-      ${text(leftRopeX-10,205,"support 1", "diagram-tiny","end")}${text(rightRopeX+10,205,"support 2", "diagram-tiny")}${arrow(335,loadY+34,335,loadY-35,"load rises 1 unit",335,loadY-48)}${arrow(freeRopeX+58,handY-92,freeRopeX+58,handY-28,"pull down 2 units",freeRopeX+58,handY-105)}
+      ${text(leftRopeX,113,"anchored end", "diagram-tiny","middle")}${text(676,174,"fixed pulley", "diagram-small")}${text(354,loadY+8,"movable pulley", "diagram-small","end")}${text(freeRopeX+9,handY-10,"free end", "diagram-tiny")}
+      ${arrow(325,loadY+34,325,loadY-35,"load rises",325,loadY-52)}${arrow(freeRopeX+67,handY-92,freeRopeX+67,handY-28,"pull down",freeRopeX+67,handY-105)}
       <rect class="callout" x="128" y="414" width="250" height="28" rx="5"/>${text(253,434,"two rope segments share the load", "diagram-tiny","middle")}<rect class="callout" x="415" y="414" width="340" height="28" rx="5"/>${text(585,434,"fixed pulley changes the pull direction", "diagram-tiny","middle")}`;
   }
 
