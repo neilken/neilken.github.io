@@ -243,12 +243,23 @@
   }
 
   function drawTorque(t) {
-    const y = 265, nearPivot = 150, nearForce = 270, nearEnd = 410, farPivot = 510, farForce = 770, farEnd = 810;
-    return `${labelBox(62,42,270,"Same downward force", "#f3b544")}
-      ${line(nearPivot,y,nearEnd,y,"machine-line")}${line(farPivot,y,farEnd,y,"machine-line")}<line class="support" x1="${nearPivot}" y1="${y}" x2="${nearPivot}" y2="338"/><line class="support" x1="${farPivot}" y1="${y}" x2="${farPivot}" y2="338"/><line class="ground" x1="78" y1="338" x2="222" y2="338"/><line class="ground" x1="438" y1="338" x2="582" y2="338"/>
-      <circle class="machine-metal" cx="${nearPivot}" cy="${y}" r="19"/><circle class="machine-metal" cx="${farPivot}" cy="${y}" r="19"/><circle class="input-color" cx="${nearForce}" cy="${y}" r="12"/><circle class="input-color" cx="${farForce}" cy="${y}" r="12"/>
-      ${arrow(nearForce,108,nearForce,252,"same force",nearForce,96)}${arrow(farForce,108,farForce,252,"same force",farForce,96)}
-      <rect class="callout" x="66" y="384" width="360" height="42" rx="5"/>${text(246,409,"Force close to pivot → less torque", "diagram-small","middle")}<rect class="callout" x="474" y="384" width="360" height="42" rx="5"/>${text(654,409,"Force far from pivot → more torque", "diagram-small","middle")}`;
+    // Both levers receive the same downward force.  The farther push creates a
+    // larger turning response, which is deliberately animated for comparison.
+    const pivotY = 265, leverLength = 275;
+    const near = { pivotX: 145, forceDistance: 105, angle: Math.sin(t * Math.PI * 2) * 0.07 };
+    const far = { pivotX: 535, forceDistance: 230, angle: Math.sin(t * Math.PI * 2) * 0.30 };
+    const position = (lever, distance) => ({
+      x: lever.pivotX + Math.cos(lever.angle) * distance,
+      y: pivotY + Math.sin(lever.angle) * distance
+    });
+    const nearEnd = position(near, leverLength), farEnd = position(far, leverLength);
+    const nearForce = position(near, near.forceDistance), farForce = position(far, far.forceDistance);
+    return `${labelBox(64,42,245,"Same downward force", "#f3b544")}${labelBox(510,42,274,"Same downward force", "#f3b544")}
+      ${line(near.pivotX,pivotY,nearEnd.x,nearEnd.y,"machine-line")}${line(far.pivotX,pivotY,farEnd.x,farEnd.y,"machine-line")}
+      <line class="support" x1="${near.pivotX}" y1="${pivotY}" x2="${near.pivotX}" y2="338"/><line class="support" x1="${far.pivotX}" y1="${pivotY}" x2="${far.pivotX}" y2="338"/><line class="ground" x1="72" y1="338" x2="218" y2="338"/><line class="ground" x1="462" y1="338" x2="608" y2="338"/>
+      <circle class="machine-metal" cx="${near.pivotX}" cy="${pivotY}" r="19"/><circle class="machine-metal" cx="${far.pivotX}" cy="${pivotY}" r="19"/><circle class="input-color" cx="${nearForce.x}" cy="${nearForce.y}" r="12"/><circle class="input-color" cx="${farForce.x}" cy="${farForce.y}" r="12"/>
+      ${arrow(nearForce.x,nearForce.y-142,nearForce.x,nearForce.y-18)}${arrow(farForce.x,farForce.y-142,farForce.x,farForce.y-18)}
+      <rect class="callout" x="48" y="384" width="315" height="42" rx="5"/>${text(205,409,"Force close to pivot → less torque", "diagram-small","middle")}<rect class="callout" x="482" y="384" width="335" height="42" rx="5"/>${text(650,409,"Force farther from pivot → more torque", "diagram-small","middle")}`;
   }
 
   function drawDesignChoice(t) {
