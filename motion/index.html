@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#12324a" />
+    <title>Mechanical Motion Explorer</title>
+    <link rel="stylesheet" href="styles.css?v=f062a2c" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div>
+        <p class="eyebrow">Engineering Essentials · Unit 2.2</p>
+        <h1>Mechanical Motion Explorer</h1>
+        <p class="subhead">See how machines transfer and change motion.</p>
+      </div>
+      <div class="header-status" aria-live="polite">
+        <span class="status-dot" aria-hidden="true"></span>
+        <span id="statusText">Animation playing</span>
+      </div>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="start-heading">
+        <div>
+          <h2 id="start-heading">How to use this explorer</h2>
+          <p>Choose a concept. Watch the labeled motion, then use the definition and the “notice” statement to explain what the machine does.</p>
+        </div>
+        <div class="analysis-rule">
+          <strong>Analysis rule:</strong> Name the <strong>part</strong> that moves. Then identify its path: a circle, a line, repeated straight motion, or a repeated arc.
+        </div>
+      </section>
+
+      <section class="topic-shell" aria-label="Mechanical motion topics">
+        <nav class="topic-nav" aria-label="Choose a concept" id="topicNav"></nav>
+
+        <article class="explorer-panel">
+          <div class="concept-copy">
+            <p class="topic-kicker" id="topicGroup"></p>
+            <h2 id="topicTitle"></h2>
+            <p class="definition" id="topicDefinition"></p>
+            <p class="notice" id="topicNotice"></p>
+          </div>
+
+          <div class="motion-stage-wrap">
+            <div class="motion-stage" id="motionStage" aria-live="polite">
+              <svg id="motionSvg" viewBox="0 0 900 450" role="img" aria-labelledby="svgTitle svgDescription">
+                <title id="svgTitle">Mechanical motion animation</title>
+                <desc id="svgDescription">Choose a concept to view its animated diagram.</desc>
+                <g id="diagram"></g>
+              </svg>
+            </div>
+            <div class="controls" aria-label="Animation controls">
+              <button class="primary-button" id="playPause" type="button" aria-pressed="true">Pause animation</button>
+              <button class="secondary-button" id="reset" type="button">Restart motion</button>
+              <label class="speed-control" for="speed">
+                Speed <output id="speedValue">0.5×</output>
+                <input id="speed" type="range" min="0.25" max="1.5" value="0.5" step="0.25" />
+              </label>
+            </div>
+          </div>
+
+          <aside class="evidence-panel" aria-labelledby="evidence-heading">
+            <h3 id="evidence-heading">What to identify</h3>
+            <dl id="evidenceList"></dl>
+          </aside>
+        </article>
+      </section>
+
+      <section class="key-idea" aria-labelledby="key-heading">
+        <h2 id="key-heading">The big engineering idea</h2>
+        <p>A mechanism can transfer motion, change its direction, change its type, or trade <strong>speed and distance</strong> for <strong>force and torque</strong>. It cannot create energy.</p>
+      </section>
+    </main>
+
+    <footer>
+      Virtual diagrams are simplified models for class learning. Focus on the labeled input, mechanism, and output.
+    </footer>
+
+    <script src="app.js?v=664fa15"></script>
+  </body>
+</html>
