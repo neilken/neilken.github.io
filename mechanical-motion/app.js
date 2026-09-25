@@ -153,9 +153,9 @@
     const leftX = pivotX - Math.sin(.68) * armLength, rightX = pivotX + Math.sin(.68) * armLength, arcY = pivotY + Math.cos(.68) * armLength;
     return `${text(125,52,"Rotary", "diagram-label", "middle")}${text(360,52,"Linear", "diagram-label", "middle")}${text(585,52,"Reciprocating", "diagram-label", "middle")}${text(790,52,"Oscillating", "diagram-label", "middle")}
       <circle class="machine-fill" cx="125" cy="190" r="72"/><line class="machine-line" x1="125" y1="190" x2="125" y2="112" transform="rotate(${a*180/Math.PI} 125 190)"/><circle class="input-color" cx="125" cy="112" r="13" transform="rotate(${a*180/Math.PI} 125 190)"/>${text(125,330,"turns around an axis", "diagram-small", "middle")}
-      <line class="motion-path" x1="280" y1="190" x2="440" y2="190"/>${arrow(285,248,430,248,"one direction",360,238)}<circle class="input-color" cx="${linearX}" cy="190" r="16"/>${text(360,330,"moves in a straight line", "diagram-small", "middle")}
-      <line class="motion-path" x1="490" y1="190" x2="680" y2="190"/><rect class="machine-fill" x="${reciprocalX-25}" y="164" width="50" height="52" rx="6"/>${arrow(490,248,680,248,"back and forth",585,238)}${text(585,330,"repeats along a line", "diagram-small", "middle")}
-      <line class="support" x1="${pivotX}" y1="90" x2="${pivotX}" y2="${pivotY}"/><path class="motion-path" d="M ${leftX} ${arcY} A ${armLength} ${armLength} 0 0 1 ${rightX} ${arcY}"/><line class="machine-line" x1="${pivotX}" y1="${pivotY}" x2="${tipX}" y2="${tipY}"/><circle class="input-color" cx="${tipX}" cy="${tipY}" r="16"/>${text(pivotX,330,"repeats through an arc", "diagram-small", "middle")}`;
+      ${arrow(285,248,430,248,"one direction",360,238)}<circle class="input-color" cx="${linearX}" cy="190" r="16"/>${text(360,330,"moves in a straight line", "diagram-small", "middle")}
+      <rect class="machine-fill" x="${reciprocalX-25}" y="164" width="50" height="52" rx="6"/>${arrow(490,248,680,248,"back and forth",585,238)}${text(585,330,"repeats along a line", "diagram-small", "middle")}
+      <line class="support" x1="${pivotX}" y1="90" x2="${pivotX}" y2="${pivotY}"/><line class="machine-line" x1="${pivotX}" y1="${pivotY}" x2="${tipX}" y2="${tipY}"/><circle class="input-color" cx="${tipX}" cy="${tipY}" r="16"/>${text(pivotX,330,"repeats through an arc", "diagram-small", "middle")}`;
   }
 
   function drawInputOutput(t) {
@@ -174,7 +174,6 @@
     return `${labelBox(65,42,220,"Driving gear: 12 teeth", "#d96d33")}${labelBox(590,42,230,"Driven gear: 36 teeth", "#367a5a")}
       ${gear(driverX,y,driverR,a,"input-color",12)}${gear(drivenX,y,drivenR,-a/3,"output-color",36)}<circle class="machine-metal" cx="${driverX}" cy="${y}" r="20"/><circle class="machine-metal" cx="${drivenX}" cy="${y}" r="28"/>
       ${text(driverX,y+7,"12", "diagram-label","middle")}${text(drivenX,y+8,"36", "diagram-label","middle")}
-      <path class="motion-path" d="M 175 318 A 96 96 0 0 0 330 318"/><path class="motion-path" d="M 375 398 A 195 195 0 0 1 685 398"/>
       <rect class="callout" x="710" y="166" width="170" height="122" rx="6"/>${text(724,200,"Gear ratio = 36 ÷ 12", "diagram-tiny")}${text(724,231,"= 3 : 1", "diagram-label")}${text(724,262,"Output: slower, stronger", "diagram-tiny")}
       ${text(390,425,"The 12-tooth driver turns 3 times while the 36-tooth driven gear turns once.","diagram-small","middle")}`;
   }
@@ -221,7 +220,7 @@
     const points=[]; for(let i=0;i<96;i++){const theta=i*Math.PI*2/96;const radius=78+27*Math.cos(theta-a);points.push(`${cx+Math.cos(theta)*radius},${cy+Math.sin(theta)*radius}`);}
     const contactRadius=78+27*Math.cos(-Math.PI/2-a), contactY=cy-contactRadius, followerTop=contactY-106;
     return `${labelBox(72,42,180,"Input: rotary cam", "#d96d33")}${labelBox(630,42,205,"Output: reciprocating follower", "#367a5a")}
-      <path class="motion-path" d="M ${cx} 85 L ${cx} 350"/><polygon class="input-color" points="${points.join(" ")}"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>
+      <polygon class="input-color" points="${points.join(" ")}"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>
       <line class="support" x1="${cx-48}" y1="72" x2="${cx-48}" y2="348"/><line class="support" x1="${cx+48}" y1="72" x2="${cx+48}" y2="348"/><rect class="output-color" x="${cx-28}" y="${followerTop}" width="56" height="106" rx="6"/>${line(cx,followerTop,cx,75,"machine-line")}
       ${arrow(520,305,520,112)}
       <rect class="callout" x="112" y="392" width="320" height="36" rx="5"/>${text(272,416,"Cam rotates in a circle", "diagram-small","middle")}<rect class="callout" x="470" y="392" width="320" height="36" rx="5"/>${text(630,416,"Follower moves up and down", "diagram-small","middle")}`;
@@ -240,7 +239,6 @@
     return `${labelBox(56,42,186,"Input: rotary crank", "#d96d33")}${labelBox(633,42,205,"Output: oscillating arm", "#367a5a")}
       <circle class="machine-fill" cx="${inputX}" cy="${inputY}" r="76"/><line class="machine-line" x1="${inputX}" y1="${inputY}" x2="${pinX}" y2="${pinY}"/><circle class="input-color" cx="${pinX}" cy="${pinY}" r="14"/><circle class="machine-metal" cx="${inputX}" cy="${inputY}" r="18"/>
       ${line(pinX,pinY,jointX,jointY)}<circle class="machine-accent" cx="${jointX}" cy="${jointY}" r="14"/>${line(outputX,outputY,tipX,tipY,"machine-line")}<circle class="machine-metal" cx="${outputX}" cy="${outputY}" r="19"/>
-      <path class="motion-path" d="M 560 84 A 200 200 0 0 1 725 368"/>
       <rect class="callout" x="92" y="392" width="340" height="36" rx="5"/>${text(262,416,"Rotary crank moves the linkage", "diagram-small","middle")}<rect class="callout" x="472" y="392" width="340" height="36" rx="5"/>${text(642,416,"Output arm sweeps through an arc", "diagram-small","middle")}`;
   }
 
@@ -250,7 +248,6 @@
       <line class="ground" x1="${shortPivot-70}" y1="332" x2="${shortPivot+70}" y2="332"/><line class="ground" x1="${longPivot-95}" y1="332" x2="${longPivot+95}" y2="332"/>
       <line class="machine-line" x1="${shortPivot}" y1="${y}" x2="${shortEnd}" y2="${y}"/><circle class="machine-metal" cx="${shortPivot}" cy="${y}" r="19"/>${arrow(shortEnd,110,shortEnd,218,"same force",shortEnd,98)}
       <line class="machine-line" x1="${longPivot}" y1="${y}" x2="${longEnd}" y2="${y}"/><circle class="machine-metal" cx="${longPivot}" cy="${y}" r="19"/>${arrow(longEnd,110,longEnd,218,"same force",longEnd,98)}
-      <line class="motion-path" x1="${shortPivot}" y1="${y+45}" x2="${shortEnd}" y2="${y+45}"/><line class="motion-path" x1="${longPivot}" y1="${y+45}" x2="${longEnd}" y2="${y+45}"/>
       ${text(shortPivot+55,365,"short lever arm", "diagram-label","middle")}${text(shortPivot+55,394,"less torque", "diagram-small","middle")}${text(longPivot+103,365,"long lever arm", "diagram-label","middle")}${text(longPivot+103,394,"more torque", "diagram-small","middle")}${text(450,430,"Torque increases when the same force is applied farther from the pivot.", "diagram-small","middle")}`;
   }
 

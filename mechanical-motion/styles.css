@@ -106,7 +106,6 @@ footer { padding: 18px 24px; color: var(--muted); text-align: center; font-size:
 .diagram-small { fill: var(--muted); font-family: Arial, Helvetica, sans-serif; font-size: 19px; }
 .diagram-tiny { fill: var(--muted); font-family: Arial, Helvetica, sans-serif; font-size: 16px; }
 .motion-line { fill: none; stroke: var(--blue); stroke-width: 5; stroke-linecap: round; }
-.motion-path { fill: none; stroke: var(--blue); stroke-width: 4; stroke-dasharray: 9 7; }
 .machine-line { fill: none; stroke: var(--ink); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
 .machine-fill { fill: #dcecf4; stroke: var(--ink); stroke-width: 4; }
 .machine-metal { fill: #a9b9c3; stroke: var(--ink); stroke-width: 4; }
