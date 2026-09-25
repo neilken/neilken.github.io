@@ -243,20 +243,20 @@
   }
 
   function drawTorque(t) {
-    const shortPivot = 235, longPivot = 635, y = 265, shortEnd = 345, longEnd = 840;
-    return `${labelBox(64,42,250,"Same downward force", "#f3b544")}
-      <line class="ground" x1="${shortPivot-70}" y1="332" x2="${shortPivot+70}" y2="332"/><line class="ground" x1="${longPivot-95}" y1="332" x2="${longPivot+95}" y2="332"/>
-      <line class="machine-line" x1="${shortPivot}" y1="${y}" x2="${shortEnd}" y2="${y}"/><circle class="machine-metal" cx="${shortPivot}" cy="${y}" r="19"/>${arrow(shortEnd,110,shortEnd,218,"same force",shortEnd,98)}
-      <line class="machine-line" x1="${longPivot}" y1="${y}" x2="${longEnd}" y2="${y}"/><circle class="machine-metal" cx="${longPivot}" cy="${y}" r="19"/>${arrow(longEnd,110,longEnd,218,"same force",longEnd,98)}
-      ${text(shortPivot+55,365,"short lever arm", "diagram-label","middle")}${text(shortPivot+55,394,"less torque", "diagram-small","middle")}${text(longPivot+103,365,"long lever arm", "diagram-label","middle")}${text(longPivot+103,394,"more torque", "diagram-small","middle")}${text(450,430,"Torque increases when the same force is applied farther from the pivot.", "diagram-small","middle")}`;
+    const y = 265, nearPivot = 150, nearForce = 270, nearEnd = 410, farPivot = 510, farForce = 770, farEnd = 810;
+    return `${labelBox(62,42,270,"Same downward force", "#f3b544")}
+      ${line(nearPivot,y,nearEnd,y,"machine-line")}${line(farPivot,y,farEnd,y,"machine-line")}<line class="support" x1="${nearPivot}" y1="${y}" x2="${nearPivot}" y2="338"/><line class="support" x1="${farPivot}" y1="${y}" x2="${farPivot}" y2="338"/><line class="ground" x1="78" y1="338" x2="222" y2="338"/><line class="ground" x1="438" y1="338" x2="582" y2="338"/>
+      <circle class="machine-metal" cx="${nearPivot}" cy="${y}" r="19"/><circle class="machine-metal" cx="${farPivot}" cy="${y}" r="19"/><circle class="input-color" cx="${nearForce}" cy="${y}" r="12"/><circle class="input-color" cx="${farForce}" cy="${y}" r="12"/>
+      ${arrow(nearForce,108,nearForce,252,"same force",nearForce,96)}${arrow(farForce,108,farForce,252,"same force",farForce,96)}
+      <rect class="callout" x="66" y="384" width="360" height="42" rx="5"/>${text(246,409,"Force close to pivot → less torque", "diagram-small","middle")}<rect class="callout" x="474" y="384" width="360" height="42" rx="5"/>${text(654,409,"Force far from pivot → more torque", "diagram-small","middle")}`;
   }
 
   function drawDesignChoice(t) {
-    const a=t*Math.PI*2, c1=[252,230],c2=[412,230], c3=[590,230],c4=[750,230];
-    return `${text(335,56,"Design A: lift a heavy load", "diagram-label","middle")}${text(675,56,"Design B: spin quickly", "diagram-label","middle")}
-      ${gear(c1[0],c1[1],52,a*3,"input-color")}${gear(c2[0],c2[1],108,-a,"output-color")}${gear(c3[0],c3[1],108,a,"input-color")}${gear(c4[0],c4[1],52,-a*3,"output-color")}
-      <rect class="callout" x="152" y="360" width="368" height="55" rx="5"/>${text(336,385,"small driver → large driven", "diagram-small","middle")}${text(336,406,"slower output · greater torque", "diagram-tiny","middle")}
-      <rect class="callout" x="560" y="360" width="280" height="55" rx="5"/>${text(700,385,"large driver → small driven", "diagram-small","middle")}${text(700,406,"faster output · less torque", "diagram-tiny","middle")}`;
+    const a=t*Math.PI*2, small=48, large=96, c1=[185,230],c2=[329,230], c3=[570,230],c4=[714,230];
+    return `${text(255,56,"Design A: lift a heavy load", "diagram-label","middle")}${text(650,56,"Design B: spin quickly", "diagram-label","middle")}
+      ${gear(c1[0],c1[1],small,a*1.2,"input-color",12)}${gear(c2[0],c2[1],large,-a*.6,"output-color",24)}${gear(c3[0],c3[1],large,a*.6,"input-color",24)}${gear(c4[0],c4[1],small,-a*1.2,"output-color",12)}
+      <rect class="callout" x="70" y="360" width="370" height="58" rx="5"/>${text(255,385,"Small driver → large driven", "diagram-small","middle")}${text(255,408,"Slower output · greater torque", "diagram-tiny","middle")}
+      <rect class="callout" x="465" y="360" width="370" height="58" rx="5"/>${text(650,385,"Large driver → small driven", "diagram-small","middle")}${text(650,408,"Faster output · less torque", "diagram-tiny","middle")}`;
   }
 
   function render(now) {
