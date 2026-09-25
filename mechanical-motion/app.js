@@ -128,9 +128,17 @@
   function pointOnCircle(cx, cy, radius, angle) { return [cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius]; }
   function line(x1, y1, x2, y2, className = "machine-line") { return `<line class="${className}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`; }
   function text(x, y, value, className = "diagram-small", anchor = "start") { return `<text class="${className}" x="${x}" y="${y}" text-anchor="${anchor}">${value}</text>`; }
-  function arrow(x1, y1, x2, y2, label) { return `${line(x1,y1,x2,y2,"motion-line")}<path d="M ${x2} ${y2} l -13 -7 l 0 14 z" fill="#1f6e9a"/>${label ? text((x1+x2)/2,(y1+y2)/2-11,label,"diagram-tiny","middle") : ""}`; }
-  function gear(cx, cy, r, angle, className = "machine-accent") {
-    const teeth = 12, points = [];
+  function arrow(x1, y1, x2, y2, label = "", labelX = null, labelY = null) {
+    const angle = Math.atan2(y2-y1, x2-x1), cosine = Math.cos(angle), sine = Math.sin(angle);
+    const baseX = x2 - 15*cosine, baseY = y2 - 15*sine;
+    const leftX = baseX + 7*sine, leftY = baseY - 7*cosine;
+    const rightX = baseX - 7*sine, rightY = baseY + 7*cosine;
+    const tx = labelX ?? (x1+x2)/2;
+    const ty = labelY ?? (y1+y2)/2-11;
+    return `${line(x1,y1,x2,y2,"motion-line")}<path d="M ${x2} ${y2} L ${leftX} ${leftY} L ${rightX} ${rightY} Z" fill="#1f6e9a"/>${label ? text(tx,ty,label,"diagram-tiny","middle") : ""}`;
+  }
+  function gear(cx, cy, r, angle, className = "machine-accent", teeth = 12) {
+    const points = [];
     for (let i = 0; i < teeth * 2; i++) { const a = angle + (Math.PI * 2 * i / (teeth * 2)); const rr = i % 2 ? r * .86 : r; points.push(`${cx + Math.cos(a)*rr},${cy + Math.sin(a)*rr}`); }
     return `<polygon class="${className}" points="${points.join(" ")}"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="${r*.28}"/>`;
   }
@@ -138,66 +146,67 @@
 
   function drawMotionTypes(t) {
     const a = t * Math.PI * 2;
-    const r = 51;
-    const linearX = 350 + ((t * .42) % 1) * 120;
-    const y = 325 + Math.sin(a) * 48;
-    const angle = Math.sin(a) * .72;
-    const swingRadius = 122;
-    const swingLeftX = 800 - Math.sin(.72) * swingRadius;
-    const swingY = 165 + Math.cos(.72) * swingRadius;
-    const swingRightX = 800 + Math.sin(.72) * swingRadius;
-    return `${text(150,54,"Rotary", "diagram-label", "middle")}${text(410,54,"Linear", "diagram-label", "middle")}${text(650,54,"Reciprocating", "diagram-label", "middle")}${text(800,54,"Oscillating", "diagram-label", "middle")}
-      <circle class="machine-fill" cx="150" cy="180" r="67"/><line class="machine-line" x1="150" y1="180" x2="150" y2="105" transform="rotate(${a*180/Math.PI} 150 180)"/><circle class="input-color" cx="150" cy="105" r="13" transform="rotate(${a*180/Math.PI} 150 180)"/>${text(150,290,"turns around an axis","diagram-tiny","middle")}
-      ${line(350,183,470,183,"motion-path")}${arrow(350,183,470,183,"straight path")}<circle class="input-color" cx="${linearX}" cy="183" r="14"/>${text(410,290,"moves one direction","diagram-tiny","middle")}
-      ${line(580,325,720,325,"motion-path")}<circle class="input-color" cx="${650 + Math.sin(a)*70}" cy="325" r="14"/>${text(650,390,"repeats along a line","diagram-tiny","middle")}
-      <line class="support" x1="800" y1="125" x2="800" y2="165"/><path class="motion-path" d="M ${swingLeftX} ${swingY} A ${swingRadius} ${swingRadius} 0 0 1 ${swingRightX} ${swingY}"/><line class="machine-line" x1="800" y1="165" x2="${800 + Math.sin(angle)*swingRadius}" y2="${165 + Math.cos(angle)*swingRadius}"/><circle class="input-color" cx="${800 + Math.sin(angle)*swingRadius}" cy="${165 + Math.cos(angle)*swingRadius}" r="15"/>${text(800,390,"repeats through an arc","diagram-tiny","middle")}`;
+    const linearX = 285 + ((t * .38) % 1) * 145;
+    const reciprocalX = 565 + Math.sin(a) * 74;
+    const pivotX = 790, pivotY = 150, armLength = 122, swing = Math.sin(a) * .68;
+    const tipX = pivotX + Math.sin(swing) * armLength, tipY = pivotY + Math.cos(swing) * armLength;
+    const leftX = pivotX - Math.sin(.68) * armLength, rightX = pivotX + Math.sin(.68) * armLength, arcY = pivotY + Math.cos(.68) * armLength;
+    return `${text(125,52,"Rotary", "diagram-label", "middle")}${text(360,52,"Linear", "diagram-label", "middle")}${text(585,52,"Reciprocating", "diagram-label", "middle")}${text(790,52,"Oscillating", "diagram-label", "middle")}
+      <circle class="machine-fill" cx="125" cy="190" r="72"/><line class="machine-line" x1="125" y1="190" x2="125" y2="112" transform="rotate(${a*180/Math.PI} 125 190)"/><circle class="input-color" cx="125" cy="112" r="13" transform="rotate(${a*180/Math.PI} 125 190)"/>${text(125,330,"turns around an axis", "diagram-small", "middle")}
+      <line class="motion-path" x1="280" y1="190" x2="440" y2="190"/>${arrow(285,248,430,248,"one direction",360,238)}<circle class="input-color" cx="${linearX}" cy="190" r="16"/>${text(360,330,"moves in a straight line", "diagram-small", "middle")}
+      <line class="motion-path" x1="490" y1="190" x2="680" y2="190"/><rect class="machine-fill" x="${reciprocalX-25}" y="164" width="50" height="52" rx="6"/>${arrow(490,248,680,248,"back and forth",585,238)}${text(585,330,"repeats along a line", "diagram-small", "middle")}
+      <line class="support" x1="${pivotX}" y1="90" x2="${pivotX}" y2="${pivotY}"/><path class="motion-path" d="M ${leftX} ${arcY} A ${armLength} ${armLength} 0 0 1 ${rightX} ${arcY}"/><line class="machine-line" x1="${pivotX}" y1="${pivotY}" x2="${tipX}" y2="${tipY}"/><circle class="input-color" cx="${tipX}" cy="${tipY}" r="16"/>${text(pivotX,330,"repeats through an arc", "diagram-small", "middle")}`;
   }
 
   function drawInputOutput(t) {
-    // The motor shaft and crank are directly connected, so they rotate
-    // at the same speed and in the same direction.
-    const a=t*Math.PI*2, crankAngle=a, cx=328, cy=232, r=75;
-    const [px,py]=pointOnCircle(cx,cy,r,crankAngle); const sliderX=570 + Math.cos(a)*88;
-    const rotationDegrees = a * 180 / Math.PI;
-    return `${labelBox(42,52,188,"Input: rotary motor shaft", "#d96d33")}${labelBox(646,52,190,"Output: reciprocating piston", "#367a5a")}
-      <circle class="machine-metal" cx="174" cy="230" r="72"/><circle class="input-color" cx="174" cy="230" r="22"/><line class="machine-line" x1="174" y1="230" x2="174" y2="161" transform="rotate(${rotationDegrees} 174 230)"/><circle class="machine-accent" cx="174" cy="161" r="14" transform="rotate(${rotationDegrees} 174 230)"/>
-      ${line(246,230,cx,230,"machine-line")}<circle class="machine-fill" cx="${cx}" cy="${cy}" r="90"/><line class="machine-line" x1="${cx}" y1="${cy}" x2="${px}" y2="${py}"/><circle class="input-color" cx="${px}" cy="${py}" r="13"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>
-      ${line(px,py,sliderX,232)}<rect class="output-color" x="${sliderX-30}" y="190" width="60" height="84" rx="7"/>${line(495,175,495,290,"support")}${line(650,175,650,290,"support")}${line(475,180,670,180,"ground")}${line(475,290,670,290,"ground")}${arrow(700,232,815,232,"output moves back and forth")}
-      ${text(250,126,"same shaft → same direction and speed", "diagram-tiny","middle")}${text(174,350,"driver: motor", "diagram-label", "middle")}${text(328,350,"mechanism: crank and slider", "diagram-label", "middle")}${text(570,350,"driven part: piston", "diagram-label", "middle")}`;
+    const a = t*Math.PI*2, cx = 330, cy = 225, crankRadius = 78;
+    const [pinX,pinY] = pointOnCircle(cx,cy,crankRadius,a);
+    const sliderX = 610 + Math.cos(a)*88;
+    return `${labelBox(42,42,190,"Input: rotary motor", "#d96d33")}${labelBox(650,42,205,"Output: reciprocating piston", "#367a5a")}
+      <rect class="machine-fill" x="66" y="161" width="108" height="128" rx="12"/><circle class="input-color" cx="174" cy="225" r="46"/><circle class="machine-metal" cx="174" cy="225" r="12"/><line class="machine-line" x1="174" y1="225" x2="330" y2="225"/>
+      <circle class="machine-fill" cx="${cx}" cy="${cy}" r="96"/><line class="machine-line" x1="${cx}" y1="${cy}" x2="${pinX}" y2="${pinY}"/><circle class="input-color" cx="${pinX}" cy="${pinY}" r="14"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>
+      ${line(pinX,pinY,sliderX,225)}<line class="ground" x1="490" y1="152" x2="748" y2="152"/><line class="ground" x1="490" y1="298" x2="748" y2="298"/><rect class="output-color" x="${sliderX-33}" y="166" width="66" height="118" rx="8"/>${arrow(495,340,730,340,"output moves back and forth",612,330)}
+      ${text(120,322,"driver", "diagram-small","middle")}${text(330,360,"crank + connecting rod", "diagram-small","middle")}${text(610,322,"driven piston", "diagram-small","middle")}${text(330,112,"motor shaft turns the crank", "diagram-small","middle")}`;
   }
 
   function drawGears(t) {
-    const a=t*Math.PI*2, small=60, big=110, c1=[285,230],c2=[455,230], teeth1=10,teeth2=30;
-    return `${labelBox(105,48,180,"Driving gear: 10 teeth", "#d96d33")}${labelBox(585,48,196,"Driven gear: 30 teeth", "#367a5a")}
-      ${gear(c1[0],c1[1],small,a*1.2,"input-color")}${gear(c2[0],c2[1],big,-a*.4,"output-color")}${text(c1[0],c1[1]+8,"10", "diagram-label","middle")}${text(c2[0],c2[1]+8,"30", "diagram-label","middle")}
-      ${arrow(150,354,338,354,"3 driver turns")} ${arrow(530,354,591,354,"1 output turn")}
-      <rect class="callout" x="610" y="170" width="220" height="123" rx="6"/>${text(625,200,"Gear ratio = 30 ÷ 10 = 3:1", "diagram-small")}${text(625,231,"Output speed: slower", "diagram-small")}${text(625,261,"Output torque: greater", "diagram-small")}
-      ${text(365,430,"Meshing gears turn in opposite directions.","diagram-small","middle")}`;
+    const a = t*Math.PI*2, driverX = 265, drivenX = 515, y = 220, driverR = 75, drivenR = 175;
+    return `${labelBox(65,42,220,"Driving gear: 12 teeth", "#d96d33")}${labelBox(590,42,230,"Driven gear: 36 teeth", "#367a5a")}
+      ${gear(driverX,y,driverR,a,"input-color",12)}${gear(drivenX,y,drivenR,-a/3,"output-color",36)}<circle class="machine-metal" cx="${driverX}" cy="${y}" r="20"/><circle class="machine-metal" cx="${drivenX}" cy="${y}" r="28"/>
+      ${text(driverX,y+7,"12", "diagram-label","middle")}${text(drivenX,y+8,"36", "diagram-label","middle")}
+      <path class="motion-path" d="M 175 318 A 96 96 0 0 0 330 318"/><path class="motion-path" d="M 375 398 A 195 195 0 0 1 685 398"/>
+      <rect class="callout" x="710" y="166" width="170" height="122" rx="6"/>${text(724,200,"Gear ratio = 36 ÷ 12", "diagram-tiny")}${text(724,231,"= 3 : 1", "diagram-label")}${text(724,262,"Output: slower, stronger", "diagram-tiny")}
+      ${text(390,425,"The 12-tooth driver turns 3 times while the 36-tooth driven gear turns once.","diagram-small","middle")}`;
   }
 
   function drawBeltDrive(t) {
-    const a=t*Math.PI*2, c1=[260,225],c2=[590,225], r1=72,r2=112;
-    const driverAngle=a*.8, outputAngle=driverAngle*r1/r2;
-    return `${labelBox(115,48,155,"Input pulley", "#d96d33")}${labelBox(625,48,160,"Output pulley", "#367a5a")}
-      <path d="M ${c1[0]} ${c1[1]-r1} L ${c2[0]} ${c2[1]-r2} A ${r2} ${r2} 0 0 1 ${c2[0]} ${c2[1]+r2} L ${c1[0]} ${c1[1]+r1} A ${r1} ${r1} 0 0 1 ${c1[0]} ${c1[1]-r1}" fill="none" stroke="#506873" stroke-width="22"/>
-      <circle class="input-color" cx="${c1[0]}" cy="${c1[1]}" r="${r1}"/><circle class="output-color" cx="${c2[0]}" cy="${c2[1]}" r="${r2}"/><line class="machine-line" x1="${c1[0]}" y1="${c1[1]}" x2="${c1[0]}" y2="${c1[1]-r1+10}" transform="rotate(${driverAngle*180/Math.PI} ${c1[0]} ${c1[1]})"/><line class="machine-line" x1="${c2[0]}" y1="${c2[1]}" x2="${c2[0]}" y2="${c2[1]-r2+10}" transform="rotate(${outputAngle*180/Math.PI} ${c2[0]} ${c2[1]})"/>
-      ${text(425,365,"Open belt: both pulleys rotate in the same direction.","diagram-small","middle")}${text(425,397,"Because the output pulley is larger, it turns more slowly.","diagram-tiny","middle")}`;
+    const a = t*Math.PI*2, driverX = 235, drivenX = 620, y = 220, driverR = 78, drivenR = 128;
+    const tilt = Math.asin((drivenR-driverR)/(drivenX-driverX));
+    const topDriver = [driverX-driverR*Math.sin(tilt), y-driverR*Math.cos(tilt)];
+    const topDriven = [drivenX-drivenR*Math.sin(tilt), y-drivenR*Math.cos(tilt)];
+    const bottomDriver = [driverX+driverR*Math.sin(tilt), y+driverR*Math.cos(tilt)];
+    const bottomDriven = [drivenX+drivenR*Math.sin(tilt), y+drivenR*Math.cos(tilt)];
+    const driverAngle = a*.72, outputAngle = driverAngle*driverR/drivenR;
+    return `${labelBox(65,42,180,"Driving pulley", "#d96d33")}${labelBox(660,42,180,"Driven pulley", "#367a5a")}
+      <line x1="${topDriver[0]}" y1="${topDriver[1]}" x2="${topDriven[0]}" y2="${topDriven[1]}" stroke="#596b75" stroke-width="18"/><line x1="${bottomDriver[0]}" y1="${bottomDriver[1]}" x2="${bottomDriven[0]}" y2="${bottomDriven[1]}" stroke="#596b75" stroke-width="18"/>
+      <circle class="input-color" cx="${driverX}" cy="${y}" r="${driverR}"/><circle class="output-color" cx="${drivenX}" cy="${y}" r="${drivenR}"/><circle class="machine-metal" cx="${driverX}" cy="${y}" r="16"/><circle class="machine-metal" cx="${drivenX}" cy="${y}" r="22"/>
+      <line class="machine-line" x1="${driverX}" y1="${y}" x2="${driverX}" y2="${y-driverR+9}" transform="rotate(${driverAngle*180/Math.PI} ${driverX} ${y})"/><line class="machine-line" x1="${drivenX}" y1="${y}" x2="${drivenX}" y2="${y-drivenR+9}" transform="rotate(${outputAngle*180/Math.PI} ${drivenX} ${y})"/>
+      ${text(driverX,348,"smaller driver", "diagram-small","middle")}${text(drivenX,386,"larger driven pulley", "diagram-small","middle")}${text(430,426,"Open belt: both pulleys turn in the same direction. The larger pulley turns more slowly.","diagram-small","middle")}`;
   }
 
   function drawLiftingPulley(t) {
     const phase = Math.sin(t*Math.PI*2);
-    const loadY=250 - phase*22, handY=295 + phase*44;
-    const movingX=520, movingRadius=45, fixedX=610, fixedY=130, fixedRadius=45;
+    const loadY=265 - phase*22, handY=310 + phase*44;
+    const movingX=480, movingRadius=50, fixedX=580, fixedY=145, fixedRadius=50;
     const leftRopeX=movingX-movingRadius, rightRopeX=movingX+movingRadius, freeRopeX=fixedX+fixedRadius;
     return `${labelBox(48,48,176,"Input: pull rope down", "#d96d33")}${labelBox(656,48,185,"Output: load rises", "#367a5a")}
-      ${line(235,80,760,80,"support")}<rect x="${leftRopeX-15}" y="93" width="30" height="${loadY-98}" rx="12" fill="#d8edf7"/><rect x="${rightRopeX-15}" y="${fixedY+10}" width="30" height="${loadY-fixedY-6}" rx="12" fill="#d8edf7"/>
+      ${line(300,80,760,80,"support")}<rect x="${leftRopeX-14}" y="93" width="28" height="${loadY-98}" rx="12" fill="#d8edf7"/><rect x="${rightRopeX-14}" y="${fixedY+10}" width="28" height="${loadY-fixedY-6}" rx="12" fill="#d8edf7"/>
       <circle class="machine-metal" cx="${fixedX}" cy="${fixedY}" r="${fixedRadius}"/><circle class="machine-metal" cx="${movingX}" cy="${loadY}" r="${movingRadius}"/>
       <path d="M ${leftRopeX} 80 L ${leftRopeX} ${loadY} A ${movingRadius} ${movingRadius} 0 0 0 ${rightRopeX} ${loadY} L ${rightRopeX} ${fixedY} A ${fixedRadius} ${fixedRadius} 0 0 0 ${freeRopeX} ${fixedY} L ${freeRopeX} ${handY}" fill="none" stroke="#755235" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
       <circle class="machine-accent" cx="${leftRopeX}" cy="80" r="9"/><circle class="machine-fill" cx="${fixedX}" cy="${fixedY}" r="11"/><circle class="machine-fill" cx="${movingX}" cy="${loadY}" r="11"/><rect class="output-color" x="${movingX-60}" y="${loadY+47}" width="120" height="76" rx="6"/>${text(movingX,loadY+93,"LOAD","diagram-small","middle")}<circle class="input-color" cx="${freeRopeX}" cy="${handY}" r="15"/>
-      ${text(leftRopeX-17,113,"1. anchored end", "diagram-small","end")}${text(698,168,"fixed pulley", "diagram-small")}${text(377,loadY+8,"movable pulley", "diagram-small","end")}${text(freeRopeX+10,handY-10,"free end", "diagram-small")}
-      ${arrow(365,loadY+31,365,loadY-34,"2. load rises 1 unit")}${arrow(freeRopeX+55,handY-90,freeRopeX+55,handY-25,"3. pull down 2 units")}
-      <path d="M ${leftRopeX-10} 102 L ${leftRopeX-38} 102 L ${leftRopeX-38} ${loadY-25} M ${leftRopeX-38} ${loadY-25} L ${rightRopeX+18} ${loadY-25} M ${rightRopeX+18} ${loadY-25} L ${rightRopeX+18} 151" fill="none" stroke="#1f6e9a" stroke-width="3" stroke-dasharray="5 5"/>
-      ${text(420,178,"2 supporting rope segments", "diagram-small","middle")}${text(455,398,"The fixed pulley changes the pull direction; the movable pulley lifts with the load.","diagram-small","middle")}${text(455,426,"In this ideal 2:1 system: pull 2 units of rope down → the load rises 1 unit.","diagram-tiny","middle")}`;
+      ${text(leftRopeX,113,"anchored end", "diagram-tiny","middle")}${text(676,174,"fixed pulley", "diagram-small")}${text(362,loadY+8,"movable pulley", "diagram-small","end")}${text(freeRopeX+9,handY-10,"free end", "diagram-tiny")}
+      ${text(leftRopeX-10,205,"support 1", "diagram-tiny","end")}${text(rightRopeX+10,205,"support 2", "diagram-tiny")}${arrow(335,loadY+34,335,loadY-35,"load rises 1 unit",335,loadY-48)}${arrow(freeRopeX+58,handY-92,freeRopeX+58,handY-28,"pull down 2 units",freeRopeX+58,handY-105)}
+      <rect class="callout" x="128" y="414" width="250" height="28" rx="5"/>${text(253,434,"two rope segments share the load", "diagram-tiny","middle")}<rect class="callout" x="415" y="414" width="340" height="28" rx="5"/>${text(585,434,"fixed pulley changes the pull direction", "diagram-tiny","middle")}`;
   }
 
   function drawCrankSlider(t) {
@@ -209,28 +218,39 @@
   }
 
   function drawCamFollower(t) {
-    const a=t*Math.PI*2, cx=315,cy=270;
-    const points=[]; for(let i=0;i<80;i++){const theta=i*Math.PI*2/80;const rr=78+28*Math.cos(theta-a);points.push(`${cx+Math.cos(theta)*rr},${cy+Math.sin(theta)*rr}`);}
-    const topRadius=78+28*Math.cos(-Math.PI/2-a), contactY=cy-topRadius, followerTop=contactY-104;
-    return `${labelBox(100,48,165,"Input: rotary cam", "#d96d33")}${labelBox(627,48,182,"Output: follower rises", "#367a5a")}
-      <polygon class="input-color" points="${points.join(" ")}"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="17"/><rect class="output-color" x="${cx-27}" y="${followerTop}" width="54" height="104" rx="5"/>${line(cx,followerTop,cx,55,"machine-line")}${line(535,104,535,315,"support")}${line(355,315,725,315,"ground")}
-      ${arrow(655,290,655,120,"follower moves up and down")}${text(470,384,"The rotating cam stays in contact with the follower.","diagram-small","middle")}`;
+    const a=t*Math.PI*2, cx=300, cy=282;
+    const points=[]; for(let i=0;i<96;i++){const theta=i*Math.PI*2/96;const radius=78+27*Math.cos(theta-a);points.push(`${cx+Math.cos(theta)*radius},${cy+Math.sin(theta)*radius}`);}
+    const contactRadius=78+27*Math.cos(-Math.PI/2-a), contactY=cy-contactRadius, followerTop=contactY-106;
+    return `${labelBox(72,42,180,"Input: rotary cam", "#d96d33")}${labelBox(630,42,205,"Output: reciprocating follower", "#367a5a")}
+      <path class="motion-path" d="M ${cx} 85 L ${cx} 350"/><polygon class="input-color" points="${points.join(" ")}"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>
+      <line class="support" x1="${cx-48}" y1="72" x2="${cx-48}" y2="348"/><line class="support" x1="${cx+48}" y1="72" x2="${cx+48}" y2="348"/><rect class="output-color" x="${cx-28}" y="${followerTop}" width="56" height="106" rx="6"/>${line(cx,followerTop,cx,75,"machine-line")}
+      ${text(300,382,"shaped rotating cam", "diagram-small","middle")}${text(505,165,"follower stays in contact", "diagram-small","middle")}${arrow(520,305,520,112,"follower moves up",520,98)}${text(505,342,"then moves back down", "diagram-small","middle")}${text(455,426,"Cam shape controls when and how far the follower moves.","diagram-small","middle")}`;
   }
 
   function drawLinkage(t) {
-    const a=t*Math.PI*2, cx=210,cy=245,r=58,[pinX,pinY]=pointOnCircle(cx,cy,r,a); const pivotX=690,pivotY=268; const wiperAngle=-2.12+Math.sin(a)*.48; const jointX=pivotX+Math.cos(wiperAngle)*88,jointY=pivotY+Math.sin(wiperAngle)*88; const tipX=pivotX+Math.cos(wiperAngle)*175,tipY=pivotY+Math.sin(wiperAngle)*175;
-    return `${labelBox(58,48,165,"Input: rotary motor", "#d96d33")}${labelBox(632,48,195,"Output: wiper oscillates", "#367a5a")}
-      <circle class="machine-metal" cx="${cx}" cy="${cy}" r="68"/><circle class="input-color" cx="${pinX}" cy="${pinY}" r="14"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>${line(pinX,pinY,jointX,jointY)}<circle class="machine-accent" cx="${jointX}" cy="${jointY}" r="15"/>${line(pivotX,pivotY,tipX,tipY,"machine-line")}<circle class="machine-metal" cx="${pivotX}" cy="${pivotY}" r="18"/><path class="motion-path" d="M 530 118 A 220 220 0 0 1 560 390"/>
-      ${text(450,393,"The connecting rod turns the pivoted wiper arm.", "diagram-small","middle")}`;
+    const a = t*Math.PI*2, inputX = 205, inputY = 258, crankR = 58, outputX = 610, outputY = 258, rodLength = 360, rockerLength = 125;
+    const [pinX,pinY] = pointOnCircle(inputX,inputY,crankR,a);
+    const dx = outputX-pinX, dy = outputY-pinY, distance = Math.hypot(dx,dy);
+    const along = (rodLength*rodLength-rockerLength*rockerLength+distance*distance)/(2*distance);
+    const offset = Math.sqrt(Math.max(0,rodLength*rodLength-along*along));
+    const baseX = pinX + along*dx/distance, baseY = pinY + along*dy/distance;
+    const jointX = baseX + offset*dy/distance, jointY = baseY - offset*dx/distance;
+    const rockerAngle = Math.atan2(jointY-outputY,jointX-outputX);
+    const tipX = outputX + Math.cos(rockerAngle)*205, tipY = outputY + Math.sin(rockerAngle)*205;
+    return `${labelBox(56,42,186,"Input: rotary crank", "#d96d33")}${labelBox(633,42,205,"Output: oscillating arm", "#367a5a")}
+      <circle class="machine-fill" cx="${inputX}" cy="${inputY}" r="76"/><line class="machine-line" x1="${inputX}" y1="${inputY}" x2="${pinX}" y2="${pinY}"/><circle class="input-color" cx="${pinX}" cy="${pinY}" r="14"/><circle class="machine-metal" cx="${inputX}" cy="${inputY}" r="18"/>
+      ${line(pinX,pinY,jointX,jointY)}<circle class="machine-accent" cx="${jointX}" cy="${jointY}" r="14"/>${line(outputX,outputY,tipX,tipY,"machine-line")}<circle class="machine-metal" cx="${outputX}" cy="${outputY}" r="19"/>
+      <path class="motion-path" d="M 550 72 A 220 220 0 0 1 720 430"/>${text(inputX,365,"input crank", "diagram-small","middle")}${text(420,375,"connecting rod", "diagram-small","middle")}${text(outputX,365,"output pivot", "diagram-small","middle")}${text(460,426,"Rigid bars joined at pivots transfer rotary motion into an oscillating sweep.", "diagram-small","middle")}`;
   }
 
   function drawTorque(t) {
-    const a=-.9+Math.sin(t*Math.PI*2)*.45;
-    return `${labelBox(70,48,188,"Same force, different torque", "#f3b544")}
-      <line class="support" x1="215" y1="320" x2="215" y2="365"/><line class="support" x1="640" y1="320" x2="640" y2="365"/><circle class="machine-metal" cx="215" cy="320" r="18"/><circle class="machine-metal" cx="640" cy="320" r="18"/>
-      <line class="machine-line" x1="215" y1="320" x2="305" y2="${320+Math.sin(a)*90}"/><line class="machine-line" x1="640" y1="320" x2="835" y2="${320+Math.sin(a)*195}"/>
-      ${arrow(300,170,300,242,"same force")}${arrow(825,170,825,242,"same force")}<path class="motion-path" d="M 160 288 A 66 66 0 0 1 270 250"/><path class="motion-path" d="M 510 280 A 170 170 0 0 1 770 180"/>
-      ${text(215,405,"short lever arm → less torque", "diagram-small","middle")}${text(640,405,"long lever arm → more torque", "diagram-small","middle")}`;
+    const shortPivot = 235, longPivot = 635, y = 265, shortEnd = 345, longEnd = 840;
+    return `${labelBox(64,42,250,"Same downward force", "#f3b544")}
+      <line class="ground" x1="${shortPivot-70}" y1="332" x2="${shortPivot+70}" y2="332"/><line class="ground" x1="${longPivot-95}" y1="332" x2="${longPivot+95}" y2="332"/>
+      <line class="machine-line" x1="${shortPivot}" y1="${y}" x2="${shortEnd}" y2="${y}"/><circle class="machine-metal" cx="${shortPivot}" cy="${y}" r="19"/>${arrow(shortEnd,110,shortEnd,218,"same force",shortEnd,98)}
+      <line class="machine-line" x1="${longPivot}" y1="${y}" x2="${longEnd}" y2="${y}"/><circle class="machine-metal" cx="${longPivot}" cy="${y}" r="19"/>${arrow(longEnd,110,longEnd,218,"same force",longEnd,98)}
+      <line class="motion-path" x1="${shortPivot}" y1="${y+45}" x2="${shortEnd}" y2="${y+45}"/><line class="motion-path" x1="${longPivot}" y1="${y+45}" x2="${longEnd}" y2="${y+45}"/>
+      ${text(shortPivot+55,365,"short lever arm", "diagram-label","middle")}${text(shortPivot+55,394,"less torque", "diagram-small","middle")}${text(longPivot+103,365,"long lever arm", "diagram-label","middle")}${text(longPivot+103,394,"more torque", "diagram-small","middle")}${text(450,430,"Torque increases when the same force is applied farther from the pivot.", "diagram-small","middle")}`;
   }
 
   function drawDesignChoice(t) {
