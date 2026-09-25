@@ -165,8 +165,8 @@
     return `${labelBox(42,42,190,"Input: rotary motor", "#d96d33")}${labelBox(650,42,205,"Output: reciprocating piston", "#367a5a")}
       <rect class="machine-fill" x="66" y="161" width="108" height="128" rx="12"/><circle class="input-color" cx="174" cy="225" r="46"/><circle class="machine-metal" cx="174" cy="225" r="12"/><line class="machine-line" x1="174" y1="225" x2="330" y2="225"/>
       <circle class="machine-fill" cx="${cx}" cy="${cy}" r="96"/><line class="machine-line" x1="${cx}" y1="${cy}" x2="${pinX}" y2="${pinY}"/><circle class="input-color" cx="${pinX}" cy="${pinY}" r="14"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>
-      ${line(pinX,pinY,sliderX,225)}<line class="ground" x1="490" y1="152" x2="748" y2="152"/><line class="ground" x1="490" y1="298" x2="748" y2="298"/><rect class="output-color" x="${sliderX-33}" y="166" width="66" height="118" rx="8"/>${arrow(495,340,730,340,"output moves back and forth",612,330)}
-      ${text(120,322,"driver", "diagram-small","middle")}${text(330,360,"crank + connecting rod", "diagram-small","middle")}${text(610,322,"driven piston", "diagram-small","middle")}${text(330,112,"motor shaft turns the crank", "diagram-small","middle")}`;
+      ${line(pinX,pinY,sliderX,225)}<line class="ground" x1="490" y1="152" x2="748" y2="152"/><line class="ground" x1="490" y1="298" x2="748" y2="298"/><rect class="output-color" x="${sliderX-33}" y="166" width="66" height="118" rx="8"/>${arrow(495,340,730,340)}
+      <rect class="callout" x="105" y="392" width="300" height="36" rx="5"/>${text(255,416,"Motor rotation drives the crank", "diagram-small","middle")}<rect class="callout" x="475" y="392" width="300" height="36" rx="5"/>${text(625,416,"Piston moves back and forth", "diagram-small","middle")}`;
   }
 
   function drawGears(t) {
@@ -196,17 +196,16 @@
 
   function drawLiftingPulley(t) {
     const phase = Math.sin(t*Math.PI*2);
-    const loadY=265 - phase*22, handY=310 + phase*44;
+    const loadY=258 - phase*22, handY=303 + phase*44;
     const movingX=480, movingRadius=50, fixedX=580, fixedY=145, fixedRadius=50;
     const leftRopeX=movingX-movingRadius, rightRopeX=movingX+movingRadius, freeRopeX=fixedX+fixedRadius;
     return `${labelBox(48,48,176,"Input: pull rope down", "#d96d33")}${labelBox(656,48,185,"Output: load rises", "#367a5a")}
-      ${line(300,80,760,80,"support")}<rect x="${leftRopeX-14}" y="93" width="28" height="${loadY-98}" rx="12" fill="#d8edf7"/><rect x="${rightRopeX-14}" y="${fixedY+10}" width="28" height="${loadY-fixedY-6}" rx="12" fill="#d8edf7"/>
+      ${line(300,80,760,80,"support")}<rect x="${leftRopeX-14}" y="93" width="28" height="${loadY-98}" rx="12" fill="#e4f3fa"/><rect x="${rightRopeX-14}" y="${fixedY+10}" width="28" height="${loadY-fixedY-6}" rx="12" fill="#e4f3fa"/>
       <circle class="machine-metal" cx="${fixedX}" cy="${fixedY}" r="${fixedRadius}"/><circle class="machine-metal" cx="${movingX}" cy="${loadY}" r="${movingRadius}"/>
       <path d="M ${leftRopeX} 80 L ${leftRopeX} ${loadY} A ${movingRadius} ${movingRadius} 0 0 0 ${rightRopeX} ${loadY} L ${rightRopeX} ${fixedY} A ${fixedRadius} ${fixedRadius} 0 0 0 ${freeRopeX} ${fixedY} L ${freeRopeX} ${handY}" fill="none" stroke="#755235" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle class="machine-accent" cx="${leftRopeX}" cy="80" r="9"/><circle class="machine-fill" cx="${fixedX}" cy="${fixedY}" r="11"/><circle class="machine-fill" cx="${movingX}" cy="${loadY}" r="11"/><rect class="output-color" x="${movingX-60}" y="${loadY+47}" width="120" height="76" rx="6"/>${text(movingX,loadY+93,"LOAD","diagram-small","middle")}<circle class="input-color" cx="${freeRopeX}" cy="${handY}" r="15"/>
-      ${text(leftRopeX,113,"anchored end", "diagram-tiny","middle")}${text(fixedX,222,"fixed pulley", "diagram-small","middle")}${text(354,loadY+8,"movable pulley", "diagram-small","end")}${text(freeRopeX+9,handY-10,"free end", "diagram-tiny")}
-      ${arrow(325,loadY+34,325,loadY-35,"load rises",325,loadY-52)}${arrow(freeRopeX+67,handY-92,freeRopeX+67,handY-28,"pull down",freeRopeX+67,handY-105)}
-      <rect class="callout" x="128" y="414" width="250" height="28" rx="5"/>${text(253,434,"two rope segments share the load", "diagram-tiny","middle")}<rect class="callout" x="415" y="414" width="340" height="28" rx="5"/>${text(585,434,"fixed pulley changes the pull direction", "diagram-tiny","middle")}`;
+      <circle class="machine-accent" cx="${leftRopeX}" cy="80" r="9"/><circle class="machine-fill" cx="${fixedX}" cy="${fixedY}" r="11"/><circle class="machine-fill" cx="${movingX}" cy="${loadY}" r="11"/><rect class="output-color" x="${movingX-60}" y="${loadY+47}" width="120" height="76" rx="6"/><circle class="input-color" cx="${freeRopeX}" cy="${handY}" r="15"/>
+      ${arrow(330,loadY+34,330,loadY-35)}${arrow(freeRopeX+68,handY-92,freeRopeX+68,handY-28)}
+      <rect class="callout" x="72" y="398" width="354" height="38" rx="5"/><rect x="72" y="398" width="8" height="38" fill="#d96d33"/>${text(249,423,"Pull the free end down 2 units", "diagram-small","middle")}<rect class="callout" x="468" y="398" width="354" height="38" rx="5"/><rect x="468" y="398" width="8" height="38" fill="#367a5a"/>${text(645,423,"The load rises 1 unit", "diagram-small","middle")}`;
   }
 
   function drawCrankSlider(t) {
@@ -214,7 +213,7 @@
     return `${labelBox(85,48,174,"Input: rotary crank", "#d96d33")}${labelBox(645,48,184,"Output: reciprocating slider", "#367a5a")}
       <circle class="machine-metal" cx="${cx}" cy="${cy}" r="103"/><line class="machine-line" x1="${cx}" y1="${cy}" x2="${px}" y2="${py}"/><circle class="input-color" cx="${px}" cy="${py}" r="15"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>
       ${line(px,py,sliderX,235)}<rect class="output-color" x="${sliderX-35}" y="185" width="70" height="100" rx="6"/>${line(470,178,470,292,"ground")}${line(735,178,735,292,"ground")}${line(450,178,755,178,"ground")}${line(450,292,755,292,"ground")}
-      ${text(cx,395,"off-center crank pin", "diagram-small","middle")}${text(605,395,"slider moves in a straight line", "diagram-small","middle")}`;
+      <rect class="callout" x="90" y="392" width="330" height="36" rx="5"/>${text(255,416,"Crank turns in a circle", "diagram-small","middle")}<rect class="callout" x="470" y="392" width="330" height="36" rx="5"/>${text(635,416,"Slider moves back and forth", "diagram-small","middle")}`;
   }
 
   function drawCamFollower(t) {
@@ -224,7 +223,8 @@
     return `${labelBox(72,42,180,"Input: rotary cam", "#d96d33")}${labelBox(630,42,205,"Output: reciprocating follower", "#367a5a")}
       <path class="motion-path" d="M ${cx} 85 L ${cx} 350"/><polygon class="input-color" points="${points.join(" ")}"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>
       <line class="support" x1="${cx-48}" y1="72" x2="${cx-48}" y2="348"/><line class="support" x1="${cx+48}" y1="72" x2="${cx+48}" y2="348"/><rect class="output-color" x="${cx-28}" y="${followerTop}" width="56" height="106" rx="6"/>${line(cx,followerTop,cx,75,"machine-line")}
-      ${text(300,382,"shaped rotating cam", "diagram-small","middle")}${text(505,165,"follower stays in contact", "diagram-small","middle")}${arrow(520,305,520,112,"follower moves up",520,98)}${text(505,342,"then moves back down", "diagram-small","middle")}${text(455,426,"Cam shape controls when and how far the follower moves.","diagram-small","middle")}`;
+      ${arrow(520,305,520,112)}
+      <rect class="callout" x="112" y="392" width="320" height="36" rx="5"/>${text(272,416,"Cam rotates in a circle", "diagram-small","middle")}<rect class="callout" x="470" y="392" width="320" height="36" rx="5"/>${text(630,416,"Follower moves up and down", "diagram-small","middle")}`;
   }
 
   function drawLinkage(t) {
@@ -240,7 +240,8 @@
     return `${labelBox(56,42,186,"Input: rotary crank", "#d96d33")}${labelBox(633,42,205,"Output: oscillating arm", "#367a5a")}
       <circle class="machine-fill" cx="${inputX}" cy="${inputY}" r="76"/><line class="machine-line" x1="${inputX}" y1="${inputY}" x2="${pinX}" y2="${pinY}"/><circle class="input-color" cx="${pinX}" cy="${pinY}" r="14"/><circle class="machine-metal" cx="${inputX}" cy="${inputY}" r="18"/>
       ${line(pinX,pinY,jointX,jointY)}<circle class="machine-accent" cx="${jointX}" cy="${jointY}" r="14"/>${line(outputX,outputY,tipX,tipY,"machine-line")}<circle class="machine-metal" cx="${outputX}" cy="${outputY}" r="19"/>
-      <path class="motion-path" d="M 550 72 A 220 220 0 0 1 720 430"/>${text(inputX,365,"input crank", "diagram-small","middle")}${text(420,375,"connecting rod", "diagram-small","middle")}${text(outputX,365,"output pivot", "diagram-small","middle")}${text(460,426,"Rigid bars joined at pivots transfer rotary motion into an oscillating sweep.", "diagram-small","middle")}`;
+      <path class="motion-path" d="M 560 84 A 200 200 0 0 1 725 368"/>
+      <rect class="callout" x="92" y="392" width="340" height="36" rx="5"/>${text(262,416,"Rotary crank moves the linkage", "diagram-small","middle")}<rect class="callout" x="472" y="392" width="340" height="36" rx="5"/>${text(642,416,"Output arm sweeps through an arc", "diagram-small","middle")}`;
   }
 
   function drawTorque(t) {
