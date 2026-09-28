@@ -85,6 +85,8 @@ main { max-width: 1180px; margin: 0 auto; padding: 26px 24px 40px; }
 .topic-button { padding: 8px 10px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: white; font-size: .88rem; font-weight: 700; }
 .topic-button:hover, .topic-button:focus-visible { border-color: var(--blue); outline: 2px solid transparent; box-shadow: 0 0 0 2px rgba(31,110,154,.18); }
 .topic-button[aria-selected="true"] { color: white; background: var(--blue); border-color: var(--blue); }
+.topic-button.is-complete { color: #fff; background: var(--green); border-color: var(--green); }
+.topic-button.is-complete[aria-selected="true"] { color: #fff; background: #245f44; border-color: #245f44; }
 
 .explorer-panel { display: grid; grid-template-columns: minmax(255px, .72fr) minmax(620px, 2fr); gap: 18px; padding: 22px; align-items: start; }
 .definition { margin-bottom: 14px; font-size: 1.05rem; font-weight: 700; }

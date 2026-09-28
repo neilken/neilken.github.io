@@ -90,12 +90,14 @@
   const checkAnswers = document.getElementById("checkAnswers");
   const resetQuestions = document.getElementById("resetQuestions");
   const checkFeedback = document.getElementById("checkFeedback");
+  const checkInstructions = document.getElementById("checkInstructions");
   const trackerForm = document.getElementById("trackerForm");
   const studentName = document.getElementById("studentName");
   const studentPeriod = document.getElementById("studentPeriod");
   const trackerStatus = document.getElementById("trackerStatus");
   const LOGGER_URL = "https://script.google.com/macros/s/AKfycbxc0lcjHaTv2Q_NanwJ_5NquwnAQhnWh28DHX62v3zFWKPFTXOa6-OGYPhotzbSUK9f0g/exec";
   const tracking = { studentName: "", period: "", sessionId: "", pending: 0, failed: 0 };
+  const completedTopics = new Set();
   let active = topics[0];
   let running = true;
   let speedFactor = 0.5;
@@ -131,8 +133,20 @@
       dd.textContent = explanation;
       evidenceList.append(dt, dd);
     });
-    document.querySelectorAll(".topic-button").forEach(button => button.setAttribute("aria-selected", String(button.dataset.topic === topic.id)));
+    updateTopicButtons();
+    renderKnowledgeCheck();
+    checkFeedback.className = "check-feedback";
+    checkFeedback.textContent = "";
     render(0);
+  }
+
+  function updateTopicButtons() {
+    document.querySelectorAll(".topic-button").forEach(button => {
+      const isComplete = completedTopics.has(button.dataset.topic);
+      button.setAttribute("aria-selected", String(button.dataset.topic === active.id));
+      button.classList.toggle("is-complete", isComplete);
+      button.setAttribute("aria-label", `${button.textContent}${isComplete ? " — completed" : ""}`);
+    });
   }
 
   function pointOnCircle(cx, cy, radius, angle) { return [cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius]; }
@@ -310,48 +324,69 @@
     speedValue.value = `${speedFactor.toFixed(2).replace(".00", "")}×`;
   });
 
-  const checkQuestions = [
-    {
-      prompt: "A sewing-machine needle repeatedly moves up and down in a straight line. What type of motion does the needle have?",
-      options: ["Rotary", "Reciprocating", "Oscillating"], answer: "Reciprocating",
-      correction: "A needle repeats back and forth along a straight line, so its motion is reciprocating."
-    },
-    {
-      prompt: "A windshield wiper arm swings back and forth around its pivot. What type of motion does the arm have?",
-      options: ["Linear", "Reciprocating", "Oscillating"], answer: "Oscillating",
-      correction: "A wiper follows an arc around a pivot, so its motion is oscillating."
-    },
-    {
-      prompt: "A gear train receives rotary input and produces rotary output. Does the gear train transfer or transform motion?",
-      options: ["Transfers motion", "Transforms motion", "Creates energy"], answer: "Transfers motion",
-      correction: "The input and output are both rotary, so the gear train transfers the same motion type."
-    },
-    {
-      prompt: "In a crank-and-slider, a rotating crank makes a piston move back and forth in a line. What is the output motion?",
-      options: ["Rotary", "Reciprocating", "Oscillating"], answer: "Reciprocating",
-      correction: "The piston moves back and forth in a straight line, which is reciprocating motion."
-    },
-    {
-      prompt: "A small driving gear turns a larger driven gear. Which output change is expected?",
-      options: ["Faster output with less torque", "Slower output with more torque", "The same speed and torque"], answer: "Slower output with more torque",
-      correction: "A small driver turning a larger driven gear slows the output and increases available torque."
-    },
-    {
-      prompt: "Two pulleys are connected by an open belt. If the input pulley turns clockwise, the output pulley turns…",
-      options: ["Clockwise", "Counterclockwise", "Back and forth"], answer: "Clockwise",
-      correction: "An open belt makes both pulleys rotate in the same direction."
-    },
-    {
-      prompt: "Why can a lifting-pulley system reduce the force needed to raise a load?",
-      options: ["It creates energy", "It trades more rope-pulling distance for less input force", "It removes the load's weight"], answer: "It trades more rope-pulling distance for less input force",
-      correction: "A lifting pulley trades distance for force; you pull more rope but use less input force."
-    },
-    {
-      prompt: "A rotating cam lifts and lowers a follower. The cam changes rotary input into which common output motion?",
-      options: ["Linear motion in one direction", "Reciprocating motion", "Rotary motion only"], answer: "Reciprocating motion",
-      correction: "As the cam turns, the follower repeats up and down along a line, so the output is reciprocating."
-    }
-  ];
+  const q = (prompt, options, answer, correction) => ({ prompt, options, answer, correction });
+  const topicQuestions = {
+    "motion-types": [
+      q("A bicycle wheel turns around its axle. What type of motion does the wheel have?", ["Rotary", "Linear", "Oscillating"], "Rotary", "The wheel turns around an axis, so it has rotary motion."),
+      q("An elevator travels upward in one straight path. What type of motion does it have while moving up?", ["Linear", "Reciprocating", "Rotary"], "Linear", "A single straight-line movement in one direction is linear motion."),
+      q("A sewing-machine needle repeatedly moves up and down in a straight line. What type of motion does it have?", ["Oscillating", "Reciprocating", "Rotary"], "Reciprocating", "Repeated back-and-forth motion along a line is reciprocating motion."),
+      q("A windshield wiper arm sweeps back and forth around its pivot. What type of motion does it have?", ["Linear", "Oscillating", "Reciprocating"], "Oscillating", "A repeated back-and-forth path through an arc is oscillating motion.")
+    ],
+    "input-output": [
+      q("In a motor-driven fan, which part provides the input motion to the blades?", ["The motor shaft", "The air moved by the fan", "The fan guard"], "The motor shaft", "The driver is the part that first receives and supplies the motion; here it is the motor shaft."),
+      q("A motor rotates a crank that moves a piston. What is the piston’s output motion?", ["Rotary", "Reciprocating", "Oscillating"], "Reciprocating", "The piston moves back and forth in a line, so its output is reciprocating."),
+      q("A mechanism has rotary input and reciprocating output. What does the mechanism do to the motion?", ["Transfers it without changing type", "Transforms it into a different type", "Creates new energy"], "Transforms it into a different type", "When the input and output types differ, the mechanism transforms motion."),
+      q("Which description correctly identifies a driven part?", ["The part that receives the mechanism’s output motion", "The part that first receives input force", "Any part that does not move"], "The part that receives the mechanism’s output motion", "The driven part receives the output after motion moves through the mechanism.")
+    ],
+    "gears": [
+      q("What feature allows two gears to transfer rotary motion without slipping?", ["Their meshing teeth", "A smooth rope", "A sliding track"], "Their meshing teeth", "Gear teeth mesh together to transfer rotation."),
+      q("A 12-tooth driving gear turns a 36-tooth driven gear. What is the gear ratio, driven teeth ÷ driving teeth?", ["1:3", "3:1", "48:1"], "3:1", "36 ÷ 12 = 3, so the driven-to-driving ratio is 3:1."),
+      q("A small driving gear turns a larger driven gear. Which output change is expected?", ["Faster output with less torque", "Slower output with more torque", "No change in speed or torque"], "Slower output with more torque", "A small driver and large driven gear trade output speed for greater available torque."),
+      q("A large driving gear turns a smaller driven gear. Which output change is expected?", ["Faster output with less torque", "Slower output with more torque", "Reciprocating output"], "Faster output with less torque", "A large driver and smaller driven gear make the output turn faster with less torque.")
+    ],
+    "belt-drive": [
+      q("Which clue shows that a mechanism is a belt-and-pulley drive?", ["A flexible belt loops around wheels", "Teeth on two meshing wheels", "A piston slides in a cylinder"], "A flexible belt loops around wheels", "A belt-and-pulley drive uses a flexible belt around pulleys."),
+      q("With an open belt, the input pulley turns clockwise. Which way does the output pulley turn?", ["Clockwise", "Counterclockwise", "Back and forth"], "Clockwise", "An open belt makes the pulleys rotate in the same direction."),
+      q("What happens to the direction of rotation when a belt is crossed between two pulleys?", ["The pulleys turn in opposite directions", "The pulleys turn in the same direction", "Both pulleys stop"], "The pulleys turn in opposite directions", "Crossing a belt reverses the output pulley’s direction."),
+      q("A small driving pulley turns a larger driven pulley. What is the typical output trade-off?", ["Slower output with more torque", "Faster output with more torque", "No change in speed"], "Slower output with more torque", "A larger driven pulley turns more slowly and can provide more turning force.")
+    ],
+    "lifting-pulley": [
+      q("In a lifting-pulley system, what is the input motion when a person pulls the free end of the rope?", ["Linear pull", "Rotary spin", "Oscillating sweep"], "Linear pull", "Pulling a rope moves it along a straight path, which is linear input motion."),
+      q("What output motion does the lifted load have?", ["Linear lifting motion", "Rotary motion", "Oscillating motion"], "Linear lifting motion", "The load moves upward along a straight path."),
+      q("Why can more supporting rope segments reduce the input force needed?", ["They share the load’s weight", "They create energy", "They remove gravity"], "They share the load’s weight", "Supporting segments share the load, reducing the force required from one pull."),
+      q("What trade-off occurs when a pulley system reduces the force needed to lift a load?", ["More rope must be pulled", "The load becomes weightless", "The load rises farther than the rope moves"], "More rope must be pulled", "Mechanical advantage trades more input distance for less input force.")
+    ],
+    "crank-slider": [
+      q("In a crank-and-slider, what kind of input motion usually turns the crank?", ["Rotary", "Reciprocating", "Oscillating"], "Rotary", "The crank turns around a shaft, so its input is rotary motion."),
+      q("What kind of output motion does the slider or piston usually have?", ["Reciprocating", "Rotary", "Oscillating"], "Reciprocating", "The slider travels back and forth along a straight guide."),
+      q("What is the crank pin in this mechanism?", ["An off-center connection on the rotating crank", "A gear tooth", "A rope support"], "An off-center connection on the rotating crank", "The off-center pin makes the connecting rod push and pull as the crank turns."),
+      q("Which familiar machine commonly uses a crank-and-slider?", ["An engine piston", "A bicycle wheel only", "A fixed wall bracket"], "An engine piston", "Engine pistons move back and forth because a rotating crank drives them.")
+    ],
+    "cam-follower": [
+      q("What is a cam?", ["A specially shaped rotating part", "A flexible belt", "A straight bar that never pivots"], "A specially shaped rotating part", "A cam is a rotating piece with a shape that controls another part’s motion."),
+      q("What is the follower in a cam-and-follower mechanism?", ["The part that contacts and moves because of the cam", "The part that provides the electrical power", "The stationary support only"], "The part that contacts and moves because of the cam", "The follower touches the cam and follows its changing edge."),
+      q("What does the cam’s shape control?", ["When and how far the follower moves", "The color of the mechanism", "Whether gravity exists"], "When and how far the follower moves", "The changing edge of the cam controls the follower’s timing and travel."),
+      q("A rotating cam lifts and lowers a follower. What is the usual follower output motion?", ["Reciprocating", "Rotary only", "One-way linear only"], "Reciprocating", "The follower repeatedly moves up and down in a line.")
+    ],
+    "linkage": [
+      q("What is a linkage?", ["Rigid bars connected at pivots", "A loop of flexible belt", "A set of meshing gear teeth"], "Rigid bars connected at pivots", "Linkages use connected rigid bars and pivot joints."),
+      q("A motor turns a linkage that makes a windshield wiper sweep through an arc. What is the wiper’s output motion?", ["Oscillating", "Rotary", "Linear"], "Oscillating", "The wiper moves back and forth through an arc around a pivot."),
+      q("What can a linkage change as it transfers motion?", ["The direction or path of motion", "The amount of energy created", "The material of the bars"], "The direction or path of motion", "Linkages transfer motion and can redirect or reshape its path."),
+      q("Which feature is most useful for identifying a linkage in a diagram?", ["Straight bars joined by pivots", "A rope over grooved wheels", "A single disk with teeth"], "Straight bars joined by pivots", "Bars connected at pivot points are the key visible clue for a linkage.")
+    ],
+    "torque": [
+      q("What is torque?", ["The turning effect of a force around an axis", "The speed of an object in a line", "The amount of energy created"], "The turning effect of a force around an axis", "Torque describes how effectively a force causes rotation around a pivot or axis."),
+      q("With the same push, where should you push a door to produce more torque?", ["Near the handle, far from the hinge", "Near the hinge", "At the center of the door"], "Near the handle, far from the hinge", "A force applied farther from the pivot creates more torque."),
+      q("Which change increases torque if the force stays the same?", ["Increase the distance from the axis", "Move the force closer to the axis", "Remove the axis"], "Increase the distance from the axis", "A longer lever arm increases the turning effect of the same force."),
+      q("Why might a machine use a gear system with greater torque?", ["To turn or lift a heavier load", "To create energy", "To make every part stop"], "To turn or lift a heavier load", "More torque helps a mechanism overcome resistance from a heavier load.")
+    ],
+    "design-choice": [
+      q("A machine must lift a heavy load slowly and safely. Which output should the design prioritize?", ["Greater torque", "Greater speed only", "No output force"], "Greater torque", "A heavy load needs sufficient turning force or mechanical advantage."),
+      q("A machine must spin a light display quickly. Which output should the design prioritize?", ["Greater output speed", "Greatest possible torque", "Reciprocating motion only"], "Greater output speed", "For a light load that must spin quickly, output speed is the primary goal."),
+      q("Which statement best describes a design criterion?", ["A measurable goal the design should meet", "A limit such as cost or available space", "A random preference with no purpose"], "A measurable goal the design should meet", "Criteria are measurable goals, such as a required speed or lifting force."),
+      q("Which statement best describes a design constraint?", ["A limit the design must work within", "A mechanism that creates energy", "The final answer to every design"], "A limit the design must work within", "Constraints are limits such as cost, safety, space, or available materials.")
+    ]
+  };
 
   function makeId() {
     if (window.crypto && typeof window.crypto.randomUUID === "function") return window.crypto.randomUUID().replace(/-/g, "");
@@ -403,7 +438,7 @@
       await fetch(LOGGER_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload), keepalive: true });
       if (!await verifySaved(payload.eventId)) throw new Error("Save was not confirmed");
       tracking.pending -= 1;
-      setTrackerStatus(`Saved: ${payload.score} / ${checkQuestions.length} with all answer choices.`, "ready");
+      setTrackerStatus(`Saved: ${payload.topicTitle} — ${payload.score} / ${payload.outOf}. ${payload.completedCount} / ${topics.length} tabs completed.`, "ready");
     } catch (_) {
       if (attempt < 2) {
         setTimeout(() => sendRecord(payload, attempt + 1), 1200 * (attempt + 1));
@@ -416,13 +451,18 @@
   }
 
   function recordKnowledgeCheck(score, answers, correctness) {
+    const questions = topicQuestions[active.id];
     const payload = {
       eventType: "knowledge_check",
       eventId: makeId(),
       sessionId: tracking.sessionId,
       studentName: tracking.studentName,
       period: tracking.period,
+      topicId: active.id,
+      topicTitle: active.title,
       score,
+      outOf: questions.length,
+      completedCount: completedTopics.size,
       answers,
       correct: correctness
     };
@@ -437,10 +477,12 @@
   });
 
   function renderKnowledgeCheck() {
-    knowledgeCheck.innerHTML = checkQuestions.map((question, index) => `
+    const questions = topicQuestions[active.id];
+    checkInstructions.textContent = `${active.title}: answer all four multiple-choice questions. A tab turns green after all four are correct.`;
+    knowledgeCheck.innerHTML = questions.map((question, index) => `
       <fieldset class="knowledge-question">
         <legend>${index + 1}. ${question.prompt}</legend>
-        ${question.options.map(option => `<label class="answer-option"><input type="radio" name="check-${index}" value="${option}"> ${option}</label>`).join("")}
+        ${question.options.map(option => `<label class="answer-option"><input type="radio" name="check-${active.id}-${index}" value="${option}"> ${option}</label>`).join("")}
       </fieldset>
     `).join("");
   }
@@ -452,25 +494,30 @@
       document.getElementById("tracker-heading").scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
+    const questions = topicQuestions[active.id];
     let correct = 0;
     const corrections = [];
     const answers = [];
     const correctness = [];
-    checkQuestions.forEach((question, index) => {
-      const selected = knowledgeCheck.querySelector(`input[name="check-${index}"]:checked`);
+    questions.forEach((question, index) => {
+      const selected = knowledgeCheck.querySelector(`input[name="check-${active.id}-${index}"]:checked`);
       const isCorrect = Boolean(selected && selected.value === question.answer);
       answers.push(selected ? selected.value : "No answer");
       correctness.push(isCorrect);
       if (isCorrect) correct += 1;
       else corrections.push(`<li><strong>${index + 1}.</strong> ${question.correction}</li>`);
     });
+    if (!corrections.length) {
+      completedTopics.add(active.id);
+      updateTopicButtons();
+    }
     recordKnowledgeCheck(correct, answers, correctness);
     checkFeedback.className = `check-feedback show${corrections.length ? " needs-review" : ""}`;
     if (!corrections.length) {
-      checkFeedback.innerHTML = `<h3>8 / 8 — Excellent.</h3><p>You can identify motion types, trace input and output motion, and explain the force-speed trade-offs.</p>`;
+      checkFeedback.innerHTML = `<h3>4 / 4 — Tab completed.</h3><p><strong>${active.title}</strong> is now green. Choose another tab and complete its four questions.</p>`;
       return;
     }
-    checkFeedback.innerHTML = `<h3>${correct} / ${checkQuestions.length} correct</h3><p>Use the corrections below, revisit the matching animation, then revise your answers.</p><ul>${corrections.join("")}</ul>`;
+    checkFeedback.innerHTML = `<h3>${correct} / ${questions.length} correct</h3><p>Use the corrections below, revisit this tab’s animation, then revise your answers. The tab turns green only when all four are correct.</p><ul>${corrections.join("")}</ul>`;
   });
 
   resetQuestions.addEventListener("click", () => {
@@ -479,7 +526,6 @@
     checkFeedback.textContent = "";
   });
 
-  renderKnowledgeCheck();
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) playPause.click();
   selectTopic(topics[0]);
   requestAnimationFrame(tick);
