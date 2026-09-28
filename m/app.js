@@ -17,21 +17,21 @@
     {
       id: "gears", group: "Mechanisms", title: "Gear train and gear ratio",
       definition: "Gears are toothed wheels that mesh to transfer rotary motion. Gear size changes the relationship between output speed and turning force.",
-      notice: "Notice: a small driving gear turning a large driven gear makes the output slower but increases its available torque.",
+      notice: "Notice: meshed gears always turn in opposite directions. A small driving gear turning a large driven gear makes the output slower but increases its available torque.",
       evidence: [["Input motion", "Rotary."], ["Output motion", "Rotary."], ["Gear ratio", "Driven teeth ÷ driving teeth."], ["Trade-off", "More torque usually means less output speed."]],
       draw: drawGears
     },
     {
       id: "belt-drive", group: "Mechanisms", title: "Belt-and-pulley drive",
       definition: "A flexible belt transfers rotary motion from one pulley to another. The pulleys can be the same size or different sizes.",
-      notice: "Notice: an open belt makes the pulleys turn in the same direction. Changing pulley diameter trades speed for torque.",
+      notice: "Notice: an open belt makes the pulleys turn in the same direction; a crossed belt makes them turn in opposite directions. Changing pulley diameter trades speed for torque.",
       evidence: [["Input motion", "Rotary."], ["Output motion", "Rotary."], ["Visible clue", "A belt loops around wheels."], ["Direction", "Open belt = same direction; crossed belt = opposite direction."]],
       draw: drawBeltDrive
     },
     {
       id: "lifting-pulley", group: "Mechanisms", title: "Lifting pulley and mechanical advantage",
       definition: "A lifting pulley uses rope and grooved wheels to lift a load. Supporting rope segments can reduce the force needed, but more rope must be pulled.",
-      notice: "Notice: the load rises a shorter distance than the hand pulls the rope. This is the force-distance trade-off.",
+      notice: "Notice: one fixed pulley only changes the direction of a pull. A moving pulley with two supporting rope segments needs about half the force, but the hand must pull twice as much rope.",
       evidence: [["Input motion", "Linear pull on the rope."], ["Output motion", "Linear lifting motion of the load."], ["Mechanical advantage", "Output force ÷ input force."], ["Trade-off", "Less input force requires more input distance."]],
       draw: drawLiftingPulley
     },
@@ -198,37 +198,54 @@
     return `${labelBox(65,42,220,"Driving gear: 12 teeth", "#d96d33")}${labelBox(590,42,230,"Driven gear: 36 teeth", "#367a5a")}
       ${gear(driverX,y,driverR,a,"input-color",12)}${gear(drivenX,y,drivenR,-a/3,"output-color",36)}<circle class="machine-metal" cx="${driverX}" cy="${y}" r="20"/><circle class="machine-metal" cx="${drivenX}" cy="${y}" r="28"/>
       ${text(driverX,y+7,"12", "diagram-label","middle")}${text(drivenX,y+8,"36", "diagram-label","middle")}
+      ${arrow(190,128,248,115,"clockwise ↻",218,100)}${arrow(605,125,546,111,"counterclockwise ↺",580,96)}
       <rect class="callout" x="710" y="166" width="170" height="122" rx="6"/>${text(724,200,"Gear ratio = 36 ÷ 12", "diagram-tiny")}${text(724,231,"= 3 : 1", "diagram-label")}${text(724,262,"Output: slower, stronger", "diagram-tiny")}
-      ${text(390,425,"The 12-tooth driver turns 3 times while the 36-tooth driven gear turns once.","diagram-small","middle")}`;
+      <rect class="callout" x="120" y="388" width="540" height="42" rx="5"/>${text(390,414,"Meshed teeth reverse rotation: driver clockwise → driven counterclockwise.","diagram-small","middle")}`;
   }
 
   function drawBeltDrive(t) {
-    const a = t*Math.PI*2, driverX = 235, drivenX = 620, y = 220, driverR = 78, drivenR = 128;
-    const tilt = Math.asin((drivenR-driverR)/(drivenX-driverX));
-    const topDriver = [driverX-driverR*Math.sin(tilt), y-driverR*Math.cos(tilt)];
-    const topDriven = [drivenX-drivenR*Math.sin(tilt), y-drivenR*Math.cos(tilt)];
-    const bottomDriver = [driverX+driverR*Math.sin(tilt), y+driverR*Math.cos(tilt)];
-    const bottomDriven = [drivenX+drivenR*Math.sin(tilt), y+drivenR*Math.cos(tilt)];
-    const driverAngle = a*.72, outputAngle = driverAngle*driverR/drivenR;
-    return `${labelBox(65,42,180,"Driving pulley", "#d96d33")}${labelBox(660,42,180,"Driven pulley", "#367a5a")}
-      <line x1="${topDriver[0]}" y1="${topDriver[1]}" x2="${topDriven[0]}" y2="${topDriven[1]}" stroke="#596b75" stroke-width="18"/><line x1="${bottomDriver[0]}" y1="${bottomDriver[1]}" x2="${bottomDriven[0]}" y2="${bottomDriven[1]}" stroke="#596b75" stroke-width="18"/>
-      <circle class="input-color" cx="${driverX}" cy="${y}" r="${driverR}"/><circle class="output-color" cx="${drivenX}" cy="${y}" r="${drivenR}"/><circle class="machine-metal" cx="${driverX}" cy="${y}" r="16"/><circle class="machine-metal" cx="${drivenX}" cy="${y}" r="22"/>
-      <line class="machine-line" x1="${driverX}" y1="${y}" x2="${driverX}" y2="${y-driverR+9}" transform="rotate(${driverAngle*180/Math.PI} ${driverX} ${y})"/><line class="machine-line" x1="${drivenX}" y1="${y}" x2="${drivenX}" y2="${y-drivenR+9}" transform="rotate(${outputAngle*180/Math.PI} ${drivenX} ${y})"/>
-      ${text(driverX,348,"smaller driver", "diagram-small","middle")}${text(drivenX,386,"larger driven pulley", "diagram-small","middle")}${text(430,426,"Open belt: both pulleys turn in the same direction. The larger pulley turns more slowly.","diagram-small","middle")}`;
+    const a = t*Math.PI*2;
+    const pulley = (driverX, drivenX, y, driverR, drivenR, crossed) => {
+      const driverAngle = a*.72;
+      const outputAngle = (crossed ? -1 : 1) * driverAngle * driverR/drivenR;
+      let belt;
+      if (crossed) {
+        // A crossed belt connects the upper run of one pulley to the lower run of the other.
+        // The two runs visibly cross, so the driven pulley reverses direction.
+        belt = `<line x1="${driverX+20}" y1="${y-driverR+5}" x2="${drivenX-28}" y2="${y+drivenR-7}" stroke="#596b75" stroke-width="14"/><line x1="${driverX+20}" y1="${y+driverR-5}" x2="${drivenX-28}" y2="${y-drivenR+7}" stroke="#596b75" stroke-width="14"/>`;
+      } else {
+        const tilt = Math.asin((drivenR-driverR)/(drivenX-driverX));
+        const topDriver = [driverX-driverR*Math.sin(tilt), y-driverR*Math.cos(tilt)];
+        const topDriven = [drivenX-drivenR*Math.sin(tilt), y-drivenR*Math.cos(tilt)];
+        const bottomDriver = [driverX+driverR*Math.sin(tilt), y+driverR*Math.cos(tilt)];
+        const bottomDriven = [drivenX+drivenR*Math.sin(tilt), y+drivenR*Math.cos(tilt)];
+        belt = `<line x1="${topDriver[0]}" y1="${topDriver[1]}" x2="${topDriven[0]}" y2="${topDriven[1]}" stroke="#596b75" stroke-width="14"/><line x1="${bottomDriver[0]}" y1="${bottomDriver[1]}" x2="${bottomDriven[0]}" y2="${bottomDriven[1]}" stroke="#596b75" stroke-width="14"/>`;
+      }
+      return `${belt}<circle class="input-color" cx="${driverX}" cy="${y}" r="${driverR}"/><circle class="output-color" cx="${drivenX}" cy="${y}" r="${drivenR}"/><circle class="machine-metal" cx="${driverX}" cy="${y}" r="13"/><circle class="machine-metal" cx="${drivenX}" cy="${y}" r="18"/><line class="machine-line" x1="${driverX}" y1="${y}" x2="${driverX}" y2="${y-driverR+8}" transform="rotate(${driverAngle*180/Math.PI} ${driverX} ${y})"/><line class="machine-line" x1="${drivenX}" y1="${y}" x2="${drivenX}" y2="${y-drivenR+8}" transform="rotate(${outputAngle*180/Math.PI} ${drivenX} ${y})"/>`;
+    };
+    return `${text(235,52,"Open belt", "diagram-label", "middle")}${text(665,52,"Crossed belt", "diagram-label", "middle")}
+      ${pulley(160,325,215,55,78,false)}${pulley(590,755,215,55,78,true)}
+      ${arrow(120,125,158,112,"clockwise ↻",140,98)}${arrow(282,123,319,111,"clockwise ↻",304,98)}${arrow(550,125,588,112,"clockwise ↻",570,98)}${arrow(800,112,760,126,"counterclockwise ↺",784,98)}
+      ${text(235,328,"Same direction", "diagram-small", "middle")}${text(665,328,"Opposite directions", "diagram-small", "middle")}
+      <rect class="callout" x="76" y="362" width="748" height="56" rx="5"/>${text(450,386,"A belt transfers rotary motion. Its path determines direction:","diagram-small","middle")}${text(450,408,"open belt = same direction · crossed belt = opposite directions","diagram-tiny","middle")}`;
   }
 
   function drawLiftingPulley(t) {
     const phase = Math.sin(t*Math.PI*2);
-    const loadY=258 - phase*22, handY=303 + phase*44;
-    const movingX=480, movingRadius=50, fixedX=580, fixedY=145, fixedRadius=50;
-    const leftRopeX=movingX-movingRadius, rightRopeX=movingX+movingRadius, freeRopeX=fixedX+fixedRadius;
-    return `${labelBox(48,48,176,"Input: pull rope down", "#d96d33")}${labelBox(656,48,185,"Output: load rises", "#367a5a")}
-      ${line(300,80,760,80,"support")}<rect x="${leftRopeX-14}" y="93" width="28" height="${loadY-98}" rx="12" fill="#e4f3fa"/><rect x="${rightRopeX-14}" y="${fixedY+10}" width="28" height="${loadY-fixedY-6}" rx="12" fill="#e4f3fa"/>
-      <circle class="machine-metal" cx="${fixedX}" cy="${fixedY}" r="${fixedRadius}"/><circle class="machine-metal" cx="${movingX}" cy="${loadY}" r="${movingRadius}"/>
-      <path d="M ${leftRopeX} 80 L ${leftRopeX} ${loadY} A ${movingRadius} ${movingRadius} 0 0 0 ${rightRopeX} ${loadY} L ${rightRopeX} ${fixedY} A ${fixedRadius} ${fixedRadius} 0 0 1 ${freeRopeX} ${fixedY} L ${freeRopeX} ${handY}" fill="none" stroke="#755235" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle class="machine-accent" cx="${leftRopeX}" cy="80" r="9"/><circle class="machine-fill" cx="${fixedX}" cy="${fixedY}" r="11"/><circle class="machine-fill" cx="${movingX}" cy="${loadY}" r="11"/><rect class="output-color" x="${movingX-60}" y="${loadY+47}" width="120" height="76" rx="6"/><circle class="input-color" cx="${freeRopeX}" cy="${handY}" r="15"/>
-      ${arrow(330,loadY+34,330,loadY-35)}${arrow(freeRopeX+68,handY-92,freeRopeX+68,handY-28)}
-      <rect class="callout" x="72" y="398" width="354" height="38" rx="5"/><rect x="72" y="398" width="8" height="38" fill="#d96d33"/>${text(249,423,"Pull the free end down 2 units", "diagram-small","middle")}<rect class="callout" x="468" y="398" width="354" height="38" rx="5"/><rect x="468" y="398" width="8" height="38" fill="#367a5a"/>${text(645,423,"The load rises 1 unit", "diagram-small","middle")}`;
+    // Left: a fixed pulley changes pull direction only. Equal rope travel gives equal load travel.
+    const fixedX=215, fixedY=172, fixedR=48, fixedLoadY=262-phase*24, fixedHandY=310+phase*24;
+    // Right: a movable pulley has two vertical supporting strands. The free end travels twice as far as the load.
+    const movingX=620, movingR=48, moveLoadY=250-phase*18, freeX=770, topY=116, topR=48, moveHandY=315+phase*36;
+    const moveLeft=movingX-movingR, moveRight=movingX+movingR;
+    return `${text(220,52,"One supporting rope segment", "diagram-label", "middle")}${text(650,52,"Two supporting rope segments", "diagram-label", "middle")}
+      ${line(75,105,370,105,"support")}${line(485,105,835,105,"support")}
+      <path d="M ${fixedX-fixedR} ${fixedLoadY} L ${fixedX-fixedR} ${fixedY} A ${fixedR} ${fixedR} 0 0 1 ${fixedX+fixedR} ${fixedY} L ${fixedX+fixedR} ${fixedHandY}" fill="none" stroke="#755235" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle class="machine-metal" cx="${fixedX}" cy="${fixedY}" r="${fixedR}"/><circle class="machine-fill" cx="${fixedX}" cy="${fixedY}" r="11"/><rect class="output-color" x="${fixedX-fixedR-34}" y="${fixedLoadY}" width="68" height="58" rx="6"/><circle class="input-color" cx="${fixedX+fixedR}" cy="${fixedHandY}" r="13"/>
+      ${arrow(112,fixedLoadY+54,112,fixedLoadY+10,"load rises",112,fixedLoadY+80)}${arrow(323,fixedHandY-72,323,fixedHandY-24,"pull down",323,fixedHandY-84)}
+      <path d="M ${moveLeft} ${topY-12} L ${moveLeft} ${moveLoadY} A ${movingR} ${movingR} 0 0 0 ${moveRight} ${moveLoadY} L ${moveRight} ${topY} A ${topR} ${topR} 0 0 1 ${freeX} ${topY} L ${freeX} ${moveHandY}" fill="none" stroke="#755235" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle class="machine-accent" cx="${moveLeft}" cy="${topY-12}" r="9"/><circle class="machine-metal" cx="${movingX}" cy="${moveLoadY}" r="${movingR}"/><circle class="machine-metal" cx="${movingX+96}" cy="${topY}" r="${topR}"/><circle class="machine-fill" cx="${movingX}" cy="${moveLoadY}" r="11"/><circle class="machine-fill" cx="${movingX+96}" cy="${topY}" r="11"/><rect class="output-color" x="${movingX-42}" y="${moveLoadY+47}" width="84" height="58" rx="6"/><circle class="input-color" cx="${freeX}" cy="${moveHandY}" r="13"/>
+      ${arrow(520,moveLoadY+52,520,moveLoadY+10,"load rises",520,moveLoadY+79)}${arrow(836,moveHandY-104,836,moveHandY-24,"pull down",836,moveHandY-116)}
+      <rect class="callout" x="45" y="382" width="355" height="48" rx="5"/>${text(222,404,"Same force; pull 1 unit → load rises 1 unit", "diagram-tiny","middle")}<rect class="callout" x="500" y="382" width="355" height="48" rx="5"/>${text(677,404,"About half the force; pull 2 units → load rises 1 unit", "diagram-tiny","middle")}`;
   }
 
   function drawCrankSlider(t) {
