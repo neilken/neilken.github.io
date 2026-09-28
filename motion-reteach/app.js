@@ -86,6 +86,10 @@
   const speed = document.getElementById("speed");
   const speedValue = document.getElementById("speedValue");
   const statusText = document.getElementById("statusText");
+  const knowledgeCheck = document.getElementById("knowledgeCheck");
+  const checkAnswers = document.getElementById("checkAnswers");
+  const resetQuestions = document.getElementById("resetQuestions");
+  const checkFeedback = document.getElementById("checkFeedback");
   let active = topics[0];
   let running = true;
   let speedFactor = 0.5;
@@ -299,6 +303,82 @@
     startTime = performance.now() - current / speedFactor * 1000;
     speedValue.value = `${speedFactor.toFixed(2).replace(".00", "")}×`;
   });
+
+  const checkQuestions = [
+    {
+      prompt: "A sewing-machine needle repeatedly moves up and down in a straight line. What type of motion does the needle have?",
+      options: ["Rotary", "Reciprocating", "Oscillating"], answer: "Reciprocating",
+      correction: "A needle repeats back and forth along a straight line, so its motion is reciprocating."
+    },
+    {
+      prompt: "A windshield wiper arm swings back and forth around its pivot. What type of motion does the arm have?",
+      options: ["Linear", "Reciprocating", "Oscillating"], answer: "Oscillating",
+      correction: "A wiper follows an arc around a pivot, so its motion is oscillating."
+    },
+    {
+      prompt: "A gear train receives rotary input and produces rotary output. Does the gear train transfer or transform motion?",
+      options: ["Transfers motion", "Transforms motion", "Creates energy"], answer: "Transfers motion",
+      correction: "The input and output are both rotary, so the gear train transfers the same motion type."
+    },
+    {
+      prompt: "In a crank-and-slider, a rotating crank makes a piston move back and forth in a line. What is the output motion?",
+      options: ["Rotary", "Reciprocating", "Oscillating"], answer: "Reciprocating",
+      correction: "The piston moves back and forth in a straight line, which is reciprocating motion."
+    },
+    {
+      prompt: "A small driving gear turns a larger driven gear. Which output change is expected?",
+      options: ["Faster output with less torque", "Slower output with more torque", "The same speed and torque"], answer: "Slower output with more torque",
+      correction: "A small driver turning a larger driven gear slows the output and increases available torque."
+    },
+    {
+      prompt: "Two pulleys are connected by an open belt. If the input pulley turns clockwise, the output pulley turns…",
+      options: ["Clockwise", "Counterclockwise", "Back and forth"], answer: "Clockwise",
+      correction: "An open belt makes both pulleys rotate in the same direction."
+    },
+    {
+      prompt: "Why can a lifting-pulley system reduce the force needed to raise a load?",
+      options: ["It creates energy", "It trades more rope-pulling distance for less input force", "It removes the load's weight"], answer: "It trades more rope-pulling distance for less input force",
+      correction: "A lifting pulley trades distance for force; you pull more rope but use less input force."
+    },
+    {
+      prompt: "A rotating cam lifts and lowers a follower. The cam changes rotary input into which common output motion?",
+      options: ["Linear motion in one direction", "Reciprocating motion", "Rotary motion only"], answer: "Reciprocating motion",
+      correction: "As the cam turns, the follower repeats up and down along a line, so the output is reciprocating."
+    }
+  ];
+
+  function renderKnowledgeCheck() {
+    knowledgeCheck.innerHTML = checkQuestions.map((question, index) => `
+      <fieldset class="knowledge-question">
+        <legend>${index + 1}. ${question.prompt}</legend>
+        ${question.options.map(option => `<label class="answer-option"><input type="radio" name="check-${index}" value="${option}"> ${option}</label>`).join("")}
+      </fieldset>
+    `).join("");
+  }
+
+  checkAnswers.addEventListener("click", () => {
+    let correct = 0;
+    const corrections = [];
+    checkQuestions.forEach((question, index) => {
+      const selected = knowledgeCheck.querySelector(`input[name="check-${index}"]:checked`);
+      if (selected && selected.value === question.answer) correct += 1;
+      else corrections.push(`<li><strong>${index + 1}.</strong> ${question.correction}</li>`);
+    });
+    checkFeedback.className = `check-feedback show${corrections.length ? " needs-review" : ""}`;
+    if (!corrections.length) {
+      checkFeedback.innerHTML = `<h3>8 / 8 — Excellent.</h3><p>You can identify motion types, trace input and output motion, and explain the force-speed trade-offs.</p>`;
+      return;
+    }
+    checkFeedback.innerHTML = `<h3>${correct} / ${checkQuestions.length} correct</h3><p>Use the corrections below, revisit the matching animation, then revise your answers.</p><ul>${corrections.join("")}</ul>`;
+  });
+
+  resetQuestions.addEventListener("click", () => {
+    knowledgeCheck.reset();
+    checkFeedback.className = "check-feedback";
+    checkFeedback.textContent = "";
+  });
+
+  renderKnowledgeCheck();
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) playPause.click();
   selectTopic(topics[0]);
   requestAnimationFrame(tick);
