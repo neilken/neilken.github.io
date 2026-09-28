@@ -1,56 +1,305 @@
 (() => {
-  const $ = (s) => document.querySelector(s);
-  const diagram = $("#diagram"), nav = $("#stepNav"), title = $("#stepTitle"), label = $("#stepLabel"), copy = $("#stepText"), say = $("#sayIt"), hint = $("#diagramHint");
-  let activeStep = 0, activeMechanism = "gears", paused = false, startTime = performance.now();
-
-  const steps = [
-    { nav: "1. Motion paths", label: "Step 1 · Name the path", title: "The four motion types", hint: "Watch the highlighted part in each panel.", say: "A piston reciprocates. A windshield wiper oscillates.", copy: `<p>Describe motion by the <strong>path</strong> a part follows. Do not name the whole machine; name the path of the part that moves.</p><div class="definition-list"><div class="definition"><strong>Rotary motion</strong>Turns in a circle around an axis.</div><div class="definition"><strong>Linear motion</strong>Moves in one straight direction.</div><div class="definition"><strong>Reciprocating motion</strong>Repeats back and forth in a straight line.</div><div class="definition"><strong>Oscillating motion</strong>Repeats back and forth through an arc around a pivot.</div></div><p><strong>Key difference:</strong> reciprocating follows a line; oscillating swings through an arc.</p>` },
-    { nav: "2. Input → output", label: "Step 2 · Trace the motion", title: "A crank changes rotary motion into reciprocating motion", hint: "Follow the gold input part, then the green output part.", say: "Rotary input goes through the crank-and-slider and becomes reciprocating output.", copy: `<p><strong>Input motion</strong> is the motion put into a mechanism. <strong>Output motion</strong> is the motion produced by the mechanism.</p><p>In this crank-and-slider mechanism, the motor turns the crank. The connecting rod pushes and pulls the slider in a straight line.</p><p>Because the input and output paths are different, this mechanism <strong>transforms motion</strong>.</p>` },
-    { nav: "3. Transfer or transform?", label: "Step 3 · Compare mechanisms", title: "Does the motion path stay the same?", hint: "Choose a mechanism, then compare its input path with its output path.", say: "Same path = transfer. Different path = transform.", copy: `<p>Choose a mechanism below. Identify its input and output motion, then decide whether it <strong>transfers</strong> or <strong>transforms</strong> motion.</p><div class="mechanism-choices" id="mechanismChoices"></div><p id="mechanismExplanation"></p>` },
-    { nav: "4. Gear tradeoff", label: "Step 4 · Choose a design effect", title: "Gears can trade speed for turning force", hint: "The large output gear turns more slowly than the small input gear.", say: "Small driver + large driven gear = slower output + more torque.", copy: `<p><strong>Torque</strong> is turning force. In a gear pair, the <strong>driver</strong> is the input gear and the <strong>driven gear</strong> is the output gear.</p><p>Here, a <strong>small driver</strong> turns a <strong>larger driven gear</strong>. The driver makes three turns while the output makes one turn.</p><p>That makes the output <strong>slower</strong>, but gives it <strong>more torque</strong>. This is useful when a machine needs more turning force for a heavy job.</p>` }
+  const topics = [
+    {
+      id: "motion-types", group: "Motion vocabulary", title: "Four types of mechanical motion",
+      definition: "Motion is described by the path a specific part follows: rotary turns around an axis, linear moves in a line, reciprocating repeats along a line, and oscillating repeats through an arc.",
+      notice: "Notice: a part can move back and forth without reciprocating. If its path is an arc around a pivot, it is oscillating.",
+      evidence: [["Rotary", "Turns around an axis."], ["Linear", "Moves in one straight direction."], ["Reciprocating", "Repeats back and forth in a straight line."], ["Oscillating", "Repeats back and forth through an arc."]],
+      draw: drawMotionTypes
+    },
+    {
+      id: "input-output", group: "System analysis", title: "Input motion and output motion",
+      definition: "Input motion is the motion entering a mechanism from the driver. Output motion is the motion produced by the driven part.",
+      notice: "Notice: trace the power from the driver to the driven part. The machine may transfer the same motion type or transform it.",
+      evidence: [["Driver", "The part that first receives force or motion."], ["Mechanism", "The connected parts that transfer or change motion."], ["Driven part", "The part that receives the output."], ["Example", "Motor rotation → crank and slider → piston reciprocation."]],
+      draw: drawInputOutput
+    },
+    {
+      id: "gears", group: "Mechanisms", title: "Gear train and gear ratio",
+      definition: "Gears are toothed wheels that mesh to transfer rotary motion. Gear size changes the relationship between output speed and turning force.",
+      notice: "Notice: a small driving gear turning a large driven gear makes the output slower but increases its available torque.",
+      evidence: [["Input motion", "Rotary."], ["Output motion", "Rotary."], ["Gear ratio", "Driven teeth ÷ driving teeth."], ["Trade-off", "More torque usually means less output speed."]],
+      draw: drawGears
+    },
+    {
+      id: "belt-drive", group: "Mechanisms", title: "Belt-and-pulley drive",
+      definition: "A flexible belt transfers rotary motion from one pulley to another. The pulleys can be the same size or different sizes.",
+      notice: "Notice: an open belt makes the pulleys turn in the same direction. Changing pulley diameter trades speed for torque.",
+      evidence: [["Input motion", "Rotary."], ["Output motion", "Rotary."], ["Visible clue", "A belt loops around wheels."], ["Direction", "Open belt = same direction; crossed belt = opposite direction."]],
+      draw: drawBeltDrive
+    },
+    {
+      id: "lifting-pulley", group: "Mechanisms", title: "Lifting pulley and mechanical advantage",
+      definition: "A lifting pulley uses rope and grooved wheels to lift a load. Supporting rope segments can reduce the force needed, but more rope must be pulled.",
+      notice: "Notice: the load rises a shorter distance than the hand pulls the rope. This is the force-distance trade-off.",
+      evidence: [["Input motion", "Linear pull on the rope."], ["Output motion", "Linear lifting motion of the load."], ["Mechanical advantage", "Output force ÷ input force."], ["Trade-off", "Less input force requires more input distance."]],
+      draw: drawLiftingPulley
+    },
+    {
+      id: "crank-slider", group: "Mechanisms", title: "Crank and slider",
+      definition: "A crank is an off-center arm on a rotating shaft. A slider is constrained to move in a straight path. Together they commonly change rotary motion into reciprocating motion.",
+      notice: "Notice: the circular crank pin pushes and pulls the connecting rod, so the piston travels back and forth in a line.",
+      evidence: [["Input motion", "Rotary."], ["Output motion", "Reciprocating."], ["Visible clue", "Off-center crank pin connected to a rod."], ["Examples", "Engine piston and sewing-machine needle."]],
+      draw: drawCrankSlider
+    },
+    {
+      id: "cam-follower", group: "Mechanisms", title: "Cam and follower",
+      definition: "A cam is a specially shaped rotating part. A follower touches the cam and moves as it follows the cam’s changing edge.",
+      notice: "Notice: the cam’s shape controls when, how far, and how quickly the follower moves.",
+      evidence: [["Input motion", "Rotary."], ["Output motion", "Usually reciprocating; sometimes oscillating."], ["Visible clue", "A shaped rotating piece presses on another part."], ["Example", "An engine valve train."]],
+      draw: drawCamFollower
+    },
+    {
+      id: "linkage", group: "Mechanisms", title: "Linkage",
+      definition: "A linkage is a set of rigid bars joined at pivots. It transfers motion and can change its direction or path.",
+      notice: "Notice: the input motor turns in a circle, but the connected bars make the wiper blade sweep through an arc.",
+      evidence: [["Input motion", "Rotary."], ["Output motion", "Often oscillating."], ["Visible clue", "Straight bars connected at pivots."], ["Examples", "Windshield wipers, pump handles, and door closers."]],
+      draw: drawLinkage
+    },
+    {
+      id: "torque", group: "Force and design", title: "Torque: useful turning force",
+      definition: "Torque is the turning effect of a force around an axis. The same force produces more torque when it is applied farther from the pivot.",
+      notice: "Notice: pushing a door near its handle is easier than pushing near its hinge because the handle is farther from the pivot.",
+      evidence: [["Axis", "The point or line the object turns around."], ["Force", "A push or pull."], ["Lever arm", "The perpendicular distance from the axis."], ["Design use", "Gears and wheel-and-axle systems can increase useful torque."]],
+      draw: drawTorque
+    },
+    {
+      id: "design-choice", group: "Force and design", title: "Design choice: force or speed?",
+      definition: "Engineers choose a mechanism by comparing its output with a goal. A design that increases force or torque usually gives up some speed or distance.",
+      notice: "Notice: neither design is automatically better. The right design is the one that meets the stated goal and constraints.",
+      evidence: [["Heavy load", "Choose greater torque or mechanical advantage."], ["Fast spin", "Choose greater output speed."], ["Criteria", "Measurable goals, such as required force or speed."], ["Constraints", "Limits such as space, safety, cost, or materials."]],
+      draw: drawDesignChoice
+    }
   ];
-  const mechanisms = {
-    gears: { name: "Gear pair", hint: "Both highlighted gears turn in circles.", explain: "A gear pair transfers motion: <strong>rotary input → rotary output</strong>. The path stays rotary, even though the gears turn in opposite directions." },
-    belt: { name: "Belt and pulleys", hint: "Both pulleys turn in circles; the belt transfers the motion.", explain: "A belt and pulleys transfer motion: <strong>rotary input → rotary output</strong>. The belt carries rotary motion from one pulley to another." },
-    cam: { name: "Cam and follower", hint: "The gold cam turns; the green follower moves up and down.", explain: "A cam and follower transform motion: <strong>rotary input → reciprocating output</strong>. The rotating cam lifts and lowers the follower in a straight line." },
-    wiper: { name: "Wiper linkage", hint: "The gold input rotates; the green arm swings about its pivot.", explain: "A wiper linkage transforms motion: <strong>rotary input → oscillating output</strong>. The input turns, while the wiper arm swings through an arc around its pivot." }
-  };
-  const defs = `<defs><marker id="arrowHead" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto"><path d="M0,0 L10,5.5 L0,11 Z" fill="#176f99"/></marker></defs>`;
-  const set = (s) => diagram.innerHTML = defs + s;
-  const labelText = (x, y, s, small = false) => `<text x="${x}" y="${y}" class="${small ? "small-label" : "label"}">${s}</text>`;
-  const arrow = (x1, y1, x2, y2) => `<path class="arrow" d="M ${x1} ${y1} L ${x2} ${y2}"/>`;
-  const wheel = (x, y, r, a, cls = "machine") => `<g transform="translate(${x} ${y}) rotate(${a})"><circle r="${r}" class="${cls}"/><path d="M0 0 L${r * .7} 0" class="support"/><circle r="9" fill="#fff" stroke="#14384b" stroke-width="4"/></g>`;
+
+  const nav = document.getElementById("topicNav");
+  const title = document.getElementById("topicTitle");
+  const group = document.getElementById("topicGroup");
+  const definition = document.getElementById("topicDefinition");
+  const notice = document.getElementById("topicNotice");
+  const evidenceList = document.getElementById("evidenceList");
+  const diagram = document.getElementById("diagram");
+  const svgTitle = document.getElementById("svgTitle");
+  const svgDescription = document.getElementById("svgDescription");
+  const playPause = document.getElementById("playPause");
+  const reset = document.getElementById("reset");
+  const speed = document.getElementById("speed");
+  const speedValue = document.getElementById("speedValue");
+  const statusText = document.getElementById("statusText");
+  let active = topics[0];
+  let running = true;
+  let speedFactor = 0.5;
+  let startTime = performance.now();
+  let pausedAt = 0;
+
+  topics.forEach(topic => {
+    const button = document.createElement("button");
+    button.className = "topic-button";
+    button.type = "button";
+    button.textContent = topic.title;
+    button.dataset.topic = topic.id;
+    button.setAttribute("aria-selected", "false");
+    button.addEventListener("click", () => selectTopic(topic));
+    nav.appendChild(button);
+  });
+
+  function selectTopic(topic) {
+    active = topic;
+    startTime = performance.now();
+    pausedAt = 0;
+    group.textContent = topic.group;
+    title.textContent = topic.title;
+    definition.textContent = topic.definition;
+    notice.textContent = topic.notice;
+    svgTitle.textContent = `${topic.title} animation`;
+    svgDescription.textContent = topic.definition;
+    evidenceList.innerHTML = "";
+    topic.evidence.forEach(([term, explanation]) => {
+      const dt = document.createElement("dt");
+      const dd = document.createElement("dd");
+      dt.textContent = term;
+      dd.textContent = explanation;
+      evidenceList.append(dt, dd);
+    });
+    document.querySelectorAll(".topic-button").forEach(button => button.setAttribute("aria-selected", String(button.dataset.topic === topic.id)));
+    render(0);
+  }
+
+  function pointOnCircle(cx, cy, radius, angle) { return [cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius]; }
+  function line(x1, y1, x2, y2, className = "machine-line") { return `<line class="${className}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`; }
+  function text(x, y, value, className = "diagram-small", anchor = "start") { return `<text class="${className}" x="${x}" y="${y}" text-anchor="${anchor}">${value}</text>`; }
+  function arrow(x1, y1, x2, y2, label = "", labelX = null, labelY = null) {
+    const angle = Math.atan2(y2-y1, x2-x1), cosine = Math.cos(angle), sine = Math.sin(angle);
+    const baseX = x2 - 15*cosine, baseY = y2 - 15*sine;
+    const leftX = baseX + 7*sine, leftY = baseY - 7*cosine;
+    const rightX = baseX - 7*sine, rightY = baseY + 7*cosine;
+    const tx = labelX ?? (x1+x2)/2;
+    const ty = labelY ?? (y1+y2)/2-11;
+    return `${line(x1,y1,x2,y2,"motion-line")}<path d="M ${x2} ${y2} L ${leftX} ${leftY} L ${rightX} ${rightY} Z" fill="#1f6e9a"/>${label ? text(tx,ty,label,"diagram-tiny","middle") : ""}`;
+  }
+  function gear(cx, cy, r, angle, className = "machine-accent", teeth = 12) {
+    const points = [];
+    for (let i = 0; i < teeth * 2; i++) { const a = angle + (Math.PI * 2 * i / (teeth * 2)); const rr = i % 2 ? r * .86 : r; points.push(`${cx + Math.cos(a)*rr},${cy + Math.sin(a)*rr}`); }
+    return `<polygon class="${className}" points="${points.join(" ")}"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="${r*.28}"/>`;
+  }
+  function labelBox(x, y, width, label, color) { return `<rect class="callout" x="${x}" y="${y}" width="${width}" height="38" rx="5"/><rect x="${x}" y="${y}" width="7" height="38" fill="${color}"/><text class="diagram-small" x="${x+16}" y="${y+25}">${label}</text>`; }
 
   function drawMotionTypes(t) {
-    const p = t / 1000, linear = 135 + ((p * 36) % 145), reciprocal = 360 + Math.sin(p * 1.7) * 64, oscillate = Math.sin(p * 1.7) * 34;
-    set(`<rect x="22" y="24" width="388" height="206" rx="10" fill="#f5fafc" stroke="#c8d6dc"/><rect x="450" y="24" width="388" height="206" rx="10" fill="#f5fafc" stroke="#c8d6dc"/><rect x="22" y="266" width="388" height="206" rx="10" fill="#f5fafc" stroke="#c8d6dc"/><rect x="450" y="266" width="388" height="206" rx="10" fill="#f5fafc" stroke="#c8d6dc"/>${labelText(42,58,"Rotary: turns in a circle")}${wheel(213,143,55,p*22,"accent")}${arrow(213,77,257,97)}${labelText(470,58,"Linear: moves one direction")}<line x1="500" y1="150" x2="795" y2="150" class="support"/><rect x="${linear}" y="112" width="80" height="76" rx="8" class="accent"/>${arrow(510,205,765,205)}${labelText(42,300,"Reciprocating: repeats on a line")}<line x1="82" y1="385" x2="365" y2="385" class="support"/><rect x="${reciprocal-42}" y="348" width="84" height="74" rx="8" class="accent"/>${arrow(350,445,110,445)}${arrow(110,445,350,445)}${labelText(470,300,"Oscillating: repeats through an arc")}<g transform="translate(645 404) rotate(${oscillate})"><line x1="0" y1="0" x2="0" y2="-120" class="support"/><rect x="-18" y="-145" width="36" height="45" rx="7" class="accent"/></g><circle cx="645" cy="404" r="14" class="machine"/>${arrow(745,435,705,455)}${arrow(705,455,745,435)}`);
+    const a = t * Math.PI * 2;
+    const linearX = 285 + ((t * .38) % 1) * 145;
+    const reciprocalX = 565 + Math.sin(a) * 74;
+    const pivotX = 790, pivotY = 150, armLength = 122, swing = Math.sin(a) * .68;
+    const tipX = pivotX + Math.sin(swing) * armLength, tipY = pivotY + Math.cos(swing) * armLength;
+    const leftX = pivotX - Math.sin(.68) * armLength, rightX = pivotX + Math.sin(.68) * armLength, arcY = pivotY + Math.cos(.68) * armLength;
+    return `${text(125,52,"Rotary", "diagram-label", "middle")}${text(360,52,"Linear", "diagram-label", "middle")}${text(585,52,"Reciprocating", "diagram-label", "middle")}${text(790,52,"Oscillating", "diagram-label", "middle")}
+      <circle class="machine-fill" cx="125" cy="190" r="72"/><line class="machine-line" x1="125" y1="190" x2="125" y2="112" transform="rotate(${a*180/Math.PI} 125 190)"/><circle class="input-color" cx="125" cy="112" r="13" transform="rotate(${a*180/Math.PI} 125 190)"/>${text(125,330,"turns around an axis", "diagram-small", "middle")}
+      ${arrow(285,248,430,248,"one direction",360,238)}<circle class="input-color" cx="${linearX}" cy="190" r="16"/>${text(360,330,"moves in a straight line", "diagram-small", "middle")}
+      <rect class="machine-fill" x="${reciprocalX-25}" y="164" width="50" height="52" rx="6"/>${arrow(490,248,680,248,"back and forth",585,238)}${text(585,330,"repeats along a line", "diagram-small", "middle")}
+      <line class="support" x1="${pivotX}" y1="90" x2="${pivotX}" y2="${pivotY}"/><line class="machine-line" x1="${pivotX}" y1="${pivotY}" x2="${tipX}" y2="${tipY}"/><circle class="input-color" cx="${tipX}" cy="${tipY}" r="16"/>${text(pivotX,330,"repeats through an arc", "diagram-small", "middle")}`;
   }
-  function drawCrank(t) {
-    const p = t / 1000, a = p * 1.4, cx = 278, cy = 258, r = 92, px = cx + Math.cos(a)*r, py = cy + Math.sin(a)*r, sx = 550 + Math.cos(a)*92;
-    set(`${labelText(80,62,"INPUT: motor turns crank",true)}${arrow(245,82,290,126)}${labelText(518,62,"OUTPUT: slider moves back and forth",true)}${arrow(666,82,650,143)}<line x1="104" y1="394" x2="770" y2="394" class="support"/><circle cx="${cx}" cy="${cy}" r="117" fill="#f5fafc" stroke="#c8d6dc" stroke-width="4"/><line x1="${cx}" y1="${cy}" x2="${px}" y2="${py}" stroke="#e7aa34" stroke-width="19" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="25" class="machine"/><circle cx="${px}" cy="${py}" r="17" class="accent"/><line x1="${px}" y1="${py}" x2="${sx}" y2="258" stroke="#53636d" stroke-width="15" stroke-linecap="round"/><rect x="${sx-54}" y="220" width="108" height="76" rx="10" class="output"/>${labelText(173,454,"rotary input",true)}${labelText(565,454,"reciprocating output",true)}${arrow(515,340,690,340)}${arrow(690,340,515,340)}${labelText(294,176,"crank",true)}${labelText(405,214,"connecting rod",true)}`);
+
+  function drawInputOutput(t) {
+    const a = t*Math.PI*2, cx = 330, cy = 225, crankRadius = 78;
+    const [pinX,pinY] = pointOnCircle(cx,cy,crankRadius,a);
+    const sliderX = 610 + Math.cos(a)*88;
+    return `${labelBox(42,42,190,"Input: rotary motor", "#d96d33")}${labelBox(650,42,205,"Output: reciprocating piston", "#367a5a")}
+      <rect class="machine-fill" x="66" y="161" width="108" height="128" rx="12"/><circle class="input-color" cx="174" cy="225" r="46"/><circle class="machine-metal" cx="174" cy="225" r="12"/><line class="machine-line" x1="174" y1="225" x2="330" y2="225"/>
+      <circle class="machine-fill" cx="${cx}" cy="${cy}" r="96"/><line class="machine-line" x1="${cx}" y1="${cy}" x2="${pinX}" y2="${pinY}"/><circle class="input-color" cx="${pinX}" cy="${pinY}" r="14"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>
+      ${line(pinX,pinY,sliderX,225)}<line class="ground" x1="490" y1="152" x2="748" y2="152"/><line class="ground" x1="490" y1="298" x2="748" y2="298"/><rect class="output-color" x="${sliderX-33}" y="166" width="66" height="118" rx="8"/>${arrow(495,340,730,340)}
+      <rect class="callout" x="105" y="392" width="300" height="36" rx="5"/>${text(255,416,"Motor rotation drives the crank", "diagram-small","middle")}<rect class="callout" x="475" y="392" width="300" height="36" rx="5"/>${text(625,416,"Piston moves back and forth", "diagram-small","middle")}`;
   }
-  function drawMechanism(t) {
-    const p=t/1000;
-    if(activeMechanism==="gears") set(`${labelText(100,62,"INPUT",true)}${labelText(607,62,"OUTPUT",true)}${wheel(270,260,92,p*24,"accent")}${wheel(515,260,92,-p*24,"output")}${labelText(181,418,"rotary",true)}${labelText(445,418,"rotary",true)}${arrow(270,128,333,150)}${arrow(515,128,452,150)}<line x1="362" y1="260" x2="423" y2="260" stroke="#14384b" stroke-width="5"/>`);
-    if(activeMechanism==="belt") set(`${labelText(130,62,"INPUT",true)}${labelText(610,62,"OUTPUT",true)}<path d="M245 172 L610 172 A88 88 0 0 1 610 348 L245 348 A88 88 0 0 1 245 172" fill="none" stroke="#53636d" stroke-width="18"/>${wheel(245,260,88,p*22,"accent")}${wheel(610,260,88,p*22,"output")}${labelText(150,426,"rotary",true)}${labelText(530,426,"rotary",true)}${arrow(245,128,308,150)}${arrow(610,128,673,150)}`);
-    if(activeMechanism==="cam") { const y=175+((Math.sin(p*1.8)+1)*43); set(`${labelText(110,62,"INPUT: rotary",true)}${labelText(546,62,"OUTPUT: reciprocating",true)}<g transform="translate(285 326) rotate(${p*32})"><ellipse rx="103" ry="55" class="accent"/><circle r="18" class="machine"/></g><line x1="610" y1="120" x2="610" y2="395" class="support"/><rect x="572" y="${y}" width="76" height="95" rx="8" class="output"/>${arrow(335,166,390,190)}${arrow(700,176,700,320)}${arrow(700,320,700,176)}`); }
-    if(activeMechanism==="wiper") { const a=Math.sin(p*1.6)*34; set(`${labelText(90,62,"INPUT: rotary",true)}${labelText(510,62,"OUTPUT: oscillating",true)}${wheel(235,295,70,p*27,"accent")}<line x1="235" y1="295" x2="390" y2="295" class="support"/><g transform="translate(570 350) rotate(${a})"><line x1="0" y1="0" x2="0" y2="-180" stroke="#70b997" stroke-width="22" stroke-linecap="round"/><rect x="-32" y="-220" width="64" height="48" rx="8" class="output"/></g><circle cx="570" cy="350" r="15" class="machine"/>${arrow(235,188,290,208)}${arrow(730,392,680,425)}${arrow(680,425,730,392)}`); }
+
+  function drawGears(t) {
+    const a = t*Math.PI*2, driverX = 265, drivenX = 515, y = 220, driverR = 75, drivenR = 175;
+    return `${labelBox(65,42,220,"Driving gear: 12 teeth", "#d96d33")}${labelBox(590,42,230,"Driven gear: 36 teeth", "#367a5a")}
+      ${gear(driverX,y,driverR,a,"input-color",12)}${gear(drivenX,y,drivenR,-a/3,"output-color",36)}<circle class="machine-metal" cx="${driverX}" cy="${y}" r="20"/><circle class="machine-metal" cx="${drivenX}" cy="${y}" r="28"/>
+      ${text(driverX,y+7,"12", "diagram-label","middle")}${text(drivenX,y+8,"36", "diagram-label","middle")}
+      <rect class="callout" x="710" y="166" width="170" height="122" rx="6"/>${text(724,200,"Gear ratio = 36 ÷ 12", "diagram-tiny")}${text(724,231,"= 3 : 1", "diagram-label")}${text(724,262,"Output: slower, stronger", "diagram-tiny")}
+      ${text(390,425,"The 12-tooth driver turns 3 times while the 36-tooth driven gear turns once.","diagram-small","middle")}`;
   }
-  function drawTradeoff(t) { const p=t/1000; set(`${labelText(110,62,"INPUT DRIVER",true)}${labelText(525,62,"OUTPUT DRIVEN GEAR",true)}${wheel(265,263,74,p*42,"accent")}${wheel(535,263,150,-p*14,"output")}<line x1="339" y1="263" x2="385" y2="263" stroke="#14384b" stroke-width="6"/>${labelText(172,452,"12 teeth · 3 turns",true)}${labelText(447,452,"36 teeth · 1 turn",true)}${arrow(265,175,315,193)}${arrow(535,99,610,130)}<rect x="74" y="100" width="160" height="36" rx="6" fill="#fff5dd" stroke="#e7aa34"/>${labelText(86,124,"faster input",true)}<rect x="604" y="406" width="172" height="36" rx="6" fill="#edf8f3" stroke="#277356"/>${labelText(616,430,"slower + more torque",true)}`); }
-  function renderNav() { nav.innerHTML=steps.map((s,i)=>`<button class="step-button" type="button" data-step="${i}" aria-selected="${i===activeStep}">${s.nav}</button>`).join(""); nav.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{activeStep=+b.dataset.step;renderStep();})); }
-  function renderChoices() { const box=$("#mechanismChoices"); box.innerHTML=Object.entries(mechanisms).map(([k,v])=>`<button type="button" class="mechanism-button" data-key="${k}" aria-pressed="${k===activeMechanism}">${v.name}</button>`).join(""); box.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{activeMechanism=b.dataset.key;renderStep();})); $("#mechanismExplanation").innerHTML=mechanisms[activeMechanism].explain; }
-  function renderStep() { const s=steps[activeStep]; label.textContent=s.label; title.textContent=s.title; copy.innerHTML=s.copy; say.textContent=s.say; hint.textContent=activeStep===2?mechanisms[activeMechanism].hint:s.hint; renderNav(); if(activeStep===2)renderChoices(); startTime=performance.now(); }
-  function animate(now) { if(!paused){const t=now-startTime;if(activeStep===0)drawMotionTypes(t);if(activeStep===1)drawCrank(t);if(activeStep===2)drawMechanism(t);if(activeStep===3)drawTradeoff(t);} requestAnimationFrame(animate); }
-  const questions=[
-    ["A windshield wiper repeatedly swings through an arc around a pivot. Its motion is…","oscillating",["linear","reciprocating","oscillating"]],
-    ["A piston moves back and forth in a straight cylinder. Its motion is…","reciprocating",["rotary","reciprocating","oscillating"]],
-    ["A gear pair has rotary input and rotary output. It…","transfers",["transfers motion","transforms motion","stops motion"]],
-    ["A crank-and-slider has rotary input and reciprocating output. It…","transforms",["transfers motion","transforms motion","creates no output"]],
-    ["A small driver turns a larger driven gear. The output will be…","slower",["faster with less torque","slower with more torque","the same speed with no torque"]]
-  ];
-  $("#quickCheck").innerHTML=questions.map(([q,a,ops],i)=>`<fieldset class="question"><legend>${i+1}. ${q}</legend>${ops.map(o=>{const v=o==="transfers motion"?"transfers":o==="transforms motion"?"transforms":o.startsWith("slower")?"slower":o;return `<label class="option"><input type="radio" name="q${i}" value="${v}"> ${o}</label>`;}).join("")}</fieldset>`).join("");
-  $("#checkButton").addEventListener("click",()=>{let right=0,miss=[];questions.forEach(([q,a],i)=>{const x=document.querySelector(`input[name="q${i}"]:checked`);if(x&&x.value===a)right++;else miss.push(`${i+1}: ${a==="slower"?"slower with more torque":a}`);});const f=$("#checkFeedback");f.className=`feedback show ${right===5?"":"needs-work"}`;f.innerHTML=right===5?"<strong>5 / 5 — Ready to explain a mechanism.</strong> You correctly identified motion paths, input/output relationships, and the gear tradeoff.":`<strong>${right} / 5 correct.</strong> Revise these answers, then check again:<ul>${miss.map(x=>`<li>${x}</li>`).join("")}</ul>`;});
-  $("#pauseButton").addEventListener("click",()=>{paused=!paused;$("#pauseButton").textContent=paused?"Play diagrams":"Pause diagrams";$("#pauseButton").setAttribute("aria-pressed",paused);});
-  $("#restartButton").addEventListener("click",()=>{startTime=performance.now();paused=false;$("#pauseButton").textContent="Pause diagrams";$("#pauseButton").setAttribute("aria-pressed","false");});
-  renderStep(); requestAnimationFrame(animate);
+
+  function drawBeltDrive(t) {
+    const a = t*Math.PI*2, driverX = 235, drivenX = 620, y = 220, driverR = 78, drivenR = 128;
+    const tilt = Math.asin((drivenR-driverR)/(drivenX-driverX));
+    const topDriver = [driverX-driverR*Math.sin(tilt), y-driverR*Math.cos(tilt)];
+    const topDriven = [drivenX-drivenR*Math.sin(tilt), y-drivenR*Math.cos(tilt)];
+    const bottomDriver = [driverX+driverR*Math.sin(tilt), y+driverR*Math.cos(tilt)];
+    const bottomDriven = [drivenX+drivenR*Math.sin(tilt), y+drivenR*Math.cos(tilt)];
+    const driverAngle = a*.72, outputAngle = driverAngle*driverR/drivenR;
+    return `${labelBox(65,42,180,"Driving pulley", "#d96d33")}${labelBox(660,42,180,"Driven pulley", "#367a5a")}
+      <line x1="${topDriver[0]}" y1="${topDriver[1]}" x2="${topDriven[0]}" y2="${topDriven[1]}" stroke="#596b75" stroke-width="18"/><line x1="${bottomDriver[0]}" y1="${bottomDriver[1]}" x2="${bottomDriven[0]}" y2="${bottomDriven[1]}" stroke="#596b75" stroke-width="18"/>
+      <circle class="input-color" cx="${driverX}" cy="${y}" r="${driverR}"/><circle class="output-color" cx="${drivenX}" cy="${y}" r="${drivenR}"/><circle class="machine-metal" cx="${driverX}" cy="${y}" r="16"/><circle class="machine-metal" cx="${drivenX}" cy="${y}" r="22"/>
+      <line class="machine-line" x1="${driverX}" y1="${y}" x2="${driverX}" y2="${y-driverR+9}" transform="rotate(${driverAngle*180/Math.PI} ${driverX} ${y})"/><line class="machine-line" x1="${drivenX}" y1="${y}" x2="${drivenX}" y2="${y-drivenR+9}" transform="rotate(${outputAngle*180/Math.PI} ${drivenX} ${y})"/>
+      ${text(driverX,348,"smaller driver", "diagram-small","middle")}${text(drivenX,386,"larger driven pulley", "diagram-small","middle")}${text(430,426,"Open belt: both pulleys turn in the same direction. The larger pulley turns more slowly.","diagram-small","middle")}`;
+  }
+
+  function drawLiftingPulley(t) {
+    const phase = Math.sin(t*Math.PI*2);
+    const loadY=258 - phase*22, handY=303 + phase*44;
+    const movingX=480, movingRadius=50, fixedX=580, fixedY=145, fixedRadius=50;
+    const leftRopeX=movingX-movingRadius, rightRopeX=movingX+movingRadius, freeRopeX=fixedX+fixedRadius;
+    return `${labelBox(48,48,176,"Input: pull rope down", "#d96d33")}${labelBox(656,48,185,"Output: load rises", "#367a5a")}
+      ${line(300,80,760,80,"support")}<rect x="${leftRopeX-14}" y="93" width="28" height="${loadY-98}" rx="12" fill="#e4f3fa"/><rect x="${rightRopeX-14}" y="${fixedY+10}" width="28" height="${loadY-fixedY-6}" rx="12" fill="#e4f3fa"/>
+      <circle class="machine-metal" cx="${fixedX}" cy="${fixedY}" r="${fixedRadius}"/><circle class="machine-metal" cx="${movingX}" cy="${loadY}" r="${movingRadius}"/>
+      <path d="M ${leftRopeX} 80 L ${leftRopeX} ${loadY} A ${movingRadius} ${movingRadius} 0 0 0 ${rightRopeX} ${loadY} L ${rightRopeX} ${fixedY} A ${fixedRadius} ${fixedRadius} 0 0 1 ${freeRopeX} ${fixedY} L ${freeRopeX} ${handY}" fill="none" stroke="#755235" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle class="machine-accent" cx="${leftRopeX}" cy="80" r="9"/><circle class="machine-fill" cx="${fixedX}" cy="${fixedY}" r="11"/><circle class="machine-fill" cx="${movingX}" cy="${loadY}" r="11"/><rect class="output-color" x="${movingX-60}" y="${loadY+47}" width="120" height="76" rx="6"/><circle class="input-color" cx="${freeRopeX}" cy="${handY}" r="15"/>
+      ${arrow(330,loadY+34,330,loadY-35)}${arrow(freeRopeX+68,handY-92,freeRopeX+68,handY-28)}
+      <rect class="callout" x="72" y="398" width="354" height="38" rx="5"/><rect x="72" y="398" width="8" height="38" fill="#d96d33"/>${text(249,423,"Pull the free end down 2 units", "diagram-small","middle")}<rect class="callout" x="468" y="398" width="354" height="38" rx="5"/><rect x="468" y="398" width="8" height="38" fill="#367a5a"/>${text(645,423,"The load rises 1 unit", "diagram-small","middle")}`;
+  }
+
+  function drawCrankSlider(t) {
+    const a=t*Math.PI*2, cx=285, cy=235, r=95, [px,py]=pointOnCircle(cx,cy,r,a), sliderX=570 + Math.cos(a)*105;
+    return `${labelBox(85,48,174,"Input: rotary crank", "#d96d33")}${labelBox(645,48,184,"Output: reciprocating slider", "#367a5a")}
+      <circle class="machine-metal" cx="${cx}" cy="${cy}" r="103"/><line class="machine-line" x1="${cx}" y1="${cy}" x2="${px}" y2="${py}"/><circle class="input-color" cx="${px}" cy="${py}" r="15"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>
+      ${line(px,py,sliderX,235)}<rect class="output-color" x="${sliderX-35}" y="185" width="70" height="100" rx="6"/>${line(470,178,470,292,"ground")}${line(735,178,735,292,"ground")}${line(450,178,755,178,"ground")}${line(450,292,755,292,"ground")}
+      <rect class="callout" x="90" y="392" width="330" height="36" rx="5"/>${text(255,416,"Crank turns in a circle", "diagram-small","middle")}<rect class="callout" x="470" y="392" width="330" height="36" rx="5"/>${text(635,416,"Slider moves back and forth", "diagram-small","middle")}`;
+  }
+
+  function drawCamFollower(t) {
+    const a=t*Math.PI*2, cx=300, cy=282;
+    const points=[]; for(let i=0;i<96;i++){const theta=i*Math.PI*2/96;const radius=78+27*Math.cos(theta-a);points.push(`${cx+Math.cos(theta)*radius},${cy+Math.sin(theta)*radius}`);}
+    const contactRadius=78+27*Math.cos(-Math.PI/2-a), contactY=cy-contactRadius, followerTop=contactY-106;
+    return `${labelBox(72,42,180,"Input: rotary cam", "#d96d33")}${labelBox(630,42,205,"Output: reciprocating follower", "#367a5a")}
+      <polygon class="input-color" points="${points.join(" ")}"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>
+      <line class="support" x1="${cx-48}" y1="72" x2="${cx-48}" y2="348"/><line class="support" x1="${cx+48}" y1="72" x2="${cx+48}" y2="348"/><rect class="output-color" x="${cx-28}" y="${followerTop}" width="56" height="106" rx="6"/>${line(cx,followerTop,cx,75,"machine-line")}
+      ${arrow(520,305,520,112)}
+      <rect class="callout" x="112" y="392" width="320" height="36" rx="5"/>${text(272,416,"Cam rotates in a circle", "diagram-small","middle")}<rect class="callout" x="470" y="392" width="320" height="36" rx="5"/>${text(630,416,"Follower moves up and down", "diagram-small","middle")}`;
+  }
+
+  function drawLinkage(t) {
+    const a = t*Math.PI*2, inputX = 205, inputY = 258, crankR = 58, outputX = 610, outputY = 258, rodLength = 360, rockerLength = 125;
+    const [pinX,pinY] = pointOnCircle(inputX,inputY,crankR,a);
+    const dx = outputX-pinX, dy = outputY-pinY, distance = Math.hypot(dx,dy);
+    const along = (rodLength*rodLength-rockerLength*rockerLength+distance*distance)/(2*distance);
+    const offset = Math.sqrt(Math.max(0,rodLength*rodLength-along*along));
+    const baseX = pinX + along*dx/distance, baseY = pinY + along*dy/distance;
+    const jointX = baseX + offset*dy/distance, jointY = baseY - offset*dx/distance;
+    const rockerAngle = Math.atan2(jointY-outputY,jointX-outputX);
+    const tipX = outputX + Math.cos(rockerAngle)*205, tipY = outputY + Math.sin(rockerAngle)*205;
+    return `${labelBox(56,42,186,"Input: rotary crank", "#d96d33")}${labelBox(633,42,205,"Output: oscillating arm", "#367a5a")}
+      <circle class="machine-fill" cx="${inputX}" cy="${inputY}" r="76"/><line class="machine-line" x1="${inputX}" y1="${inputY}" x2="${pinX}" y2="${pinY}"/><circle class="input-color" cx="${pinX}" cy="${pinY}" r="14"/><circle class="machine-metal" cx="${inputX}" cy="${inputY}" r="18"/>
+      ${line(pinX,pinY,jointX,jointY)}<circle class="machine-accent" cx="${jointX}" cy="${jointY}" r="14"/>${line(outputX,outputY,tipX,tipY,"machine-line")}<circle class="machine-metal" cx="${outputX}" cy="${outputY}" r="19"/>
+      <rect class="callout" x="92" y="392" width="340" height="36" rx="5"/>${text(262,416,"Rotary crank moves the linkage", "diagram-small","middle")}<rect class="callout" x="472" y="392" width="340" height="36" rx="5"/>${text(642,416,"Output arm sweeps through an arc", "diagram-small","middle")}`;
+  }
+
+  function drawTorque(t) {
+    // Both levers receive the same downward force.  The farther push creates a
+    // larger turning response, which is deliberately animated for comparison.
+    const pivotY = 265, leverLength = 275;
+    const near = { pivotX: 145, forceDistance: 105, angle: Math.sin(t * Math.PI * 2) * 0.07 };
+    const far = { pivotX: 535, forceDistance: 230, angle: Math.sin(t * Math.PI * 2) * 0.30 };
+    const position = (lever, distance) => ({
+      x: lever.pivotX + Math.cos(lever.angle) * distance,
+      y: pivotY + Math.sin(lever.angle) * distance
+    });
+    const nearEnd = position(near, leverLength), farEnd = position(far, leverLength);
+    const nearForce = position(near, near.forceDistance), farForce = position(far, far.forceDistance);
+    return `${labelBox(64,42,245,"Same downward force", "#f3b544")}${labelBox(510,42,274,"Same downward force", "#f3b544")}
+      ${line(near.pivotX,pivotY,nearEnd.x,nearEnd.y,"machine-line")}${line(far.pivotX,pivotY,farEnd.x,farEnd.y,"machine-line")}
+      <line class="support" x1="${near.pivotX}" y1="${pivotY}" x2="${near.pivotX}" y2="338"/><line class="support" x1="${far.pivotX}" y1="${pivotY}" x2="${far.pivotX}" y2="338"/><line class="ground" x1="72" y1="338" x2="218" y2="338"/><line class="ground" x1="462" y1="338" x2="608" y2="338"/>
+      <circle class="machine-metal" cx="${near.pivotX}" cy="${pivotY}" r="19"/><circle class="machine-metal" cx="${far.pivotX}" cy="${pivotY}" r="19"/><circle class="input-color" cx="${nearForce.x}" cy="${nearForce.y}" r="12"/><circle class="input-color" cx="${farForce.x}" cy="${farForce.y}" r="12"/>
+      ${arrow(nearForce.x,nearForce.y-142,nearForce.x,nearForce.y-18)}${arrow(farForce.x,farForce.y-142,farForce.x,farForce.y-18)}
+      <rect class="callout" x="48" y="384" width="315" height="42" rx="5"/>${text(205,409,"Force close to pivot → less torque", "diagram-small","middle")}<rect class="callout" x="482" y="384" width="335" height="42" rx="5"/>${text(650,409,"Force farther from pivot → more torque", "diagram-small","middle")}`;
+  }
+
+  function drawDesignChoice(t) {
+    const a=t*Math.PI*2, small=48, large=96, c1=[185,230],c2=[329,230], c3=[570,230],c4=[714,230];
+    return `${text(255,56,"Design A: lift a heavy load", "diagram-label","middle")}${text(650,56,"Design B: spin quickly", "diagram-label","middle")}
+      ${gear(c1[0],c1[1],small,a*1.2,"input-color",12)}${gear(c2[0],c2[1],large,-a*.6,"output-color",24)}${gear(c3[0],c3[1],large,a*.6,"input-color",24)}${gear(c4[0],c4[1],small,-a*1.2,"output-color",12)}
+      <rect class="callout" x="70" y="360" width="370" height="58" rx="5"/>${text(255,385,"Small driver → large driven", "diagram-small","middle")}${text(255,408,"Slower output · greater torque", "diagram-tiny","middle")}
+      <rect class="callout" x="465" y="360" width="370" height="58" rx="5"/>${text(650,385,"Large driver → small driven", "diagram-small","middle")}${text(650,408,"Faster output · less torque", "diagram-tiny","middle")}`;
+  }
+
+  function render(now) {
+    const elapsed = running ? (now - startTime) / 1000 * speedFactor : pausedAt;
+    diagram.innerHTML = active.draw(elapsed);
+  }
+  function tick(now) { render(now); requestAnimationFrame(tick); }
+
+  playPause.addEventListener("click", () => {
+    if (running) {
+      pausedAt = (performance.now() - startTime) / 1000 * speedFactor;
+      running = false;
+      playPause.textContent = "Play animation";
+      playPause.setAttribute("aria-pressed", "false");
+      statusText.textContent = "Animation paused";
+    } else {
+      startTime = performance.now() - pausedAt / speedFactor * 1000;
+      running = true;
+      playPause.textContent = "Pause animation";
+      playPause.setAttribute("aria-pressed", "true");
+      statusText.textContent = "Animation playing";
+    }
+  });
+  reset.addEventListener("click", () => { startTime = performance.now(); pausedAt = 0; render(0); });
+  speed.addEventListener("input", () => {
+    const current = running ? (performance.now() - startTime) / 1000 * speedFactor : pausedAt;
+    speedFactor = Number(speed.value);
+    pausedAt = current;
+    startTime = performance.now() - current / speedFactor * 1000;
+    speedValue.value = `${speedFactor.toFixed(2).replace(".00", "")}×`;
+  });
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) playPause.click();
+  selectTopic(topics[0]);
+  requestAnimationFrame(tick);
 })();
