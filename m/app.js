@@ -252,14 +252,16 @@
     const a = t * Math.PI * 2;
     const focusName = { crank: "crank + slider", cam: "cam + follower", linkage: "linkage" }[focus];
     const sliderX = 189 + Math.sin(a) * 28;
-    const followerY = 391 - (14 + 16 * (1 + Math.cos(a))) / 2;
+    // The follower's lower face stays on the cam's changing top edge.
+    const camTopRadius = Math.sqrt(20 * 20 * Math.sin(a) * Math.sin(a) + 14 * 14 * Math.cos(a) * Math.cos(a));
+    const followerY = 400 - camTopRadius - 26;
     const rockerAngle = Math.sin(a) * .38 - Math.PI / 2;
     const rockerTipX = 725 + Math.cos(rockerAngle) * 34;
     const rockerTipY = 408 + Math.sin(rockerAngle) * 34;
     return `<rect class="callout" x="40" y="344" width="820" height="88" rx="6"/>
-      ${text(450,366,`Compare rotary-input mechanisms — this tab: ${focusName}`,"diagram-tiny","middle")}
+      ${text(450,366,`In these examples, rotary input creates different outputs — this tab: ${focusName}`,"diagram-tiny","middle")}
       <circle class="machine-metal" cx="120" cy="399" r="15"/><line class="machine-line" x1="120" y1="399" x2="132" y2="399" transform="rotate(${a*180/Math.PI} 120 399)"/><line class="machine-line" x1="135" y1="399" x2="${sliderX}" y2="399"/><rect class="output-color" x="${sliderX}" y="389" width="26" height="20" rx="3"/>${text(175,425,"Crank: reciprocating", "diagram-tiny","middle")}
-      <ellipse class="input-color" cx="430" cy="400" rx="20" ry="14" transform="rotate(${a*180/Math.PI} 430 400)"/><rect class="output-color" x="468" y="${followerY}" width="20" height="36" rx="3"/>${text(455,425,"Cam: reciprocating", "diagram-tiny","middle")}
+      <ellipse class="input-color" cx="430" cy="400" rx="20" ry="14" transform="rotate(${a*180/Math.PI} 430 400)"/><rect class="output-color" x="420" y="${followerY}" width="20" height="26" rx="3"/>${text(455,425,"Cam: reciprocating", "diagram-tiny","middle")}
       <circle class="machine-metal" cx="725" cy="408" r="10"/><line class="machine-line" x1="725" y1="408" x2="${rockerTipX}" y2="${rockerTipY}"/><circle class="output-color" cx="${rockerTipX}" cy="${rockerTipY}" r="8"/>${text(735,425,"Linkage: oscillating", "diagram-tiny","middle")}`;
   }
 
