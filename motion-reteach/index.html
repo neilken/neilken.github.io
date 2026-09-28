@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#14384b" />
+    <title>Mechanical Motion Reteach</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div>
+        <p class="eyebrow">Engineering Essentials · Unit 2.2</p>
+        <h1>Mechanical Motion: Reteach</h1>
+        <p class="subhead">Follow the motion from the input, through a mechanism, to the output.</p>
+      </div>
+      <button class="pause-button" id="pauseButton" type="button" aria-pressed="false">Pause diagrams</button>
+    </header>
+
+    <main>
+      <section class="big-idea" aria-labelledby="bigIdeaTitle">
+        <p class="eyebrow">The big idea</p>
+        <h2 id="bigIdeaTitle"><strong>Input motion</strong> → <strong>mechanism</strong> → <strong>output motion</strong></h2>
+        <p>A mechanism can <strong>transfer</strong> motion (the path stays the same) or <strong>transform</strong> motion (the path changes).</p>
+      </section>
+
+      <section class="lesson-shell" aria-label="Mechanical motion lesson">
+        <nav class="step-nav" aria-label="Lesson steps" id="stepNav"></nav>
+        <div class="lesson-grid">
+          <article class="lesson-copy">
+            <p class="step-label" id="stepLabel"></p>
+            <h2 id="stepTitle"></h2>
+            <div id="stepText"></div>
+            <div class="say-it" id="sayIt"></div>
+          </article>
+          <section class="diagram-panel" aria-label="Animated diagram">
+            <svg id="motionSvg" viewBox="0 0 860 500" role="img" aria-labelledby="svgTitle svgDescription">
+              <title id="svgTitle">Mechanical motion diagram</title>
+              <desc id="svgDescription">A labeled mechanical motion diagram.</desc>
+              <g id="diagram"></g>
+            </svg>
+            <div class="diagram-controls">
+              <button id="restartButton" type="button">Restart diagram</button>
+              <span id="diagramHint">Watch the highlighted part move.</span>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="check-shell" aria-labelledby="checkTitle">
+        <div>
+          <p class="eyebrow">Quick check</p>
+          <h2 id="checkTitle">Can you use the relationships?</h2>
+          <p>Answer after completing the four steps. You may check and revise as many times as needed.</p>
+        </div>
+        <form id="quickCheck" class="questions" novalidate></form>
+        <button class="check-button" id="checkButton" type="button">Check my answers</button>
+        <div id="checkFeedback" class="feedback" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <footer>Use the words <strong>input</strong>, <strong>output</strong>, <strong>transfer</strong>, or <strong>transform</strong> when you explain what a mechanism does.</footer>
+    <script src="app.js"></script>
+  </body>
+</html>
