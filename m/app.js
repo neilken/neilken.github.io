@@ -248,12 +248,27 @@
       <rect class="callout" x="45" y="382" width="355" height="48" rx="5"/>${text(222,404,"Same force; pull 1 unit → load rises 1 unit", "diagram-tiny","middle")}<rect class="callout" x="500" y="382" width="355" height="48" rx="5"/>${text(677,404,"About half the force; pull 2 units → load rises 1 unit", "diagram-tiny","middle")}`;
   }
 
+  function mechanismComparison(t, focus) {
+    const a = t * Math.PI * 2;
+    const focusName = { crank: "crank + slider", cam: "cam + follower", linkage: "linkage" }[focus];
+    const sliderX = 189 + Math.sin(a) * 28;
+    const followerY = 391 - (14 + 16 * (1 + Math.cos(a))) / 2;
+    const rockerAngle = Math.sin(a) * .38 - Math.PI / 2;
+    const rockerTipX = 725 + Math.cos(rockerAngle) * 34;
+    const rockerTipY = 408 + Math.sin(rockerAngle) * 34;
+    return `<rect class="callout" x="40" y="344" width="820" height="88" rx="6"/>
+      ${text(450,366,`Compare rotary-input mechanisms — this tab: ${focusName}`,"diagram-tiny","middle")}
+      <circle class="machine-metal" cx="120" cy="399" r="15"/><line class="machine-line" x1="120" y1="399" x2="132" y2="399" transform="rotate(${a*180/Math.PI} 120 399)"/><line class="machine-line" x1="135" y1="399" x2="${sliderX}" y2="399"/><rect class="output-color" x="${sliderX}" y="389" width="26" height="20" rx="3"/>${text(175,425,"Crank: reciprocating", "diagram-tiny","middle")}
+      <ellipse class="input-color" cx="430" cy="400" rx="20" ry="14" transform="rotate(${a*180/Math.PI} 430 400)"/><rect class="output-color" x="468" y="${followerY}" width="20" height="36" rx="3"/>${text(455,425,"Cam: reciprocating", "diagram-tiny","middle")}
+      <circle class="machine-metal" cx="725" cy="408" r="10"/><line class="machine-line" x1="725" y1="408" x2="${rockerTipX}" y2="${rockerTipY}"/><circle class="output-color" cx="${rockerTipX}" cy="${rockerTipY}" r="8"/>${text(735,425,"Linkage: oscillating", "diagram-tiny","middle")}`;
+  }
+
   function drawCrankSlider(t) {
     const a=t*Math.PI*2, cx=285, cy=235, r=95, [px,py]=pointOnCircle(cx,cy,r,a), sliderX=570 + Math.cos(a)*105;
     return `${labelBox(85,48,174,"Input: rotary crank", "#d96d33")}${labelBox(645,48,184,"Output: reciprocating slider", "#367a5a")}
       <circle class="machine-metal" cx="${cx}" cy="${cy}" r="103"/><line class="machine-line" x1="${cx}" y1="${cy}" x2="${px}" y2="${py}"/><circle class="input-color" cx="${px}" cy="${py}" r="15"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>
       ${line(px,py,sliderX,235)}<rect class="output-color" x="${sliderX-35}" y="185" width="70" height="100" rx="6"/>${line(470,178,470,292,"ground")}${line(735,178,735,292,"ground")}${line(450,178,755,178,"ground")}${line(450,292,755,292,"ground")}
-      <rect class="callout" x="90" y="392" width="330" height="36" rx="5"/>${text(255,416,"Crank turns in a circle", "diagram-small","middle")}<rect class="callout" x="470" y="392" width="330" height="36" rx="5"/>${text(635,416,"Slider moves back and forth", "diagram-small","middle")}`;
+      ${mechanismComparison(t,"crank")}`;
   }
 
   function drawCamFollower(t) {
@@ -264,7 +279,7 @@
       <polygon class="input-color" points="${points.join(" ")}"/><circle class="machine-metal" cx="${cx}" cy="${cy}" r="18"/>
       <line class="support" x1="${cx-48}" y1="72" x2="${cx-48}" y2="348"/><line class="support" x1="${cx+48}" y1="72" x2="${cx+48}" y2="348"/><rect class="output-color" x="${cx-28}" y="${followerTop}" width="56" height="106" rx="6"/>${line(cx,followerTop,cx,75,"machine-line")}
       ${arrow(520,305,520,112)}
-      <rect class="callout" x="112" y="392" width="320" height="36" rx="5"/>${text(272,416,"Cam rotates in a circle", "diagram-small","middle")}<rect class="callout" x="470" y="392" width="320" height="36" rx="5"/>${text(630,416,"Follower moves up and down", "diagram-small","middle")}`;
+      ${mechanismComparison(t,"cam")}`;
   }
 
   function drawLinkage(t) {
@@ -280,7 +295,7 @@
     return `${labelBox(56,42,186,"Input: rotary crank", "#d96d33")}${labelBox(633,42,205,"Output: oscillating arm", "#367a5a")}
       <circle class="machine-fill" cx="${inputX}" cy="${inputY}" r="76"/><line class="machine-line" x1="${inputX}" y1="${inputY}" x2="${pinX}" y2="${pinY}"/><circle class="input-color" cx="${pinX}" cy="${pinY}" r="14"/><circle class="machine-metal" cx="${inputX}" cy="${inputY}" r="18"/>
       ${line(pinX,pinY,jointX,jointY)}<circle class="machine-accent" cx="${jointX}" cy="${jointY}" r="14"/>${line(outputX,outputY,tipX,tipY,"machine-line")}<circle class="machine-metal" cx="${outputX}" cy="${outputY}" r="19"/>
-      <rect class="callout" x="92" y="392" width="340" height="36" rx="5"/>${text(262,416,"Rotary crank moves the linkage", "diagram-small","middle")}<rect class="callout" x="472" y="392" width="340" height="36" rx="5"/>${text(642,416,"Output arm sweeps through an arc", "diagram-small","middle")}`;
+      ${mechanismComparison(t,"linkage")}`;
   }
 
   function drawTorque(t) {
