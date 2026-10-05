@@ -60,18 +60,22 @@ function winch(t) {
   const smallGear = gear(300,286,42,10,a);
   const bigGear = gear(405,286,68,16,-a*(42/68));
   const drumAngle = -a*(42/68);
+  const guidePulley={x:735,y:274,r:26};
+  const guideAngle=drumAngle*(38/guidePulley.r);
+  const loadX=761;
   return `${background()}
     <line class="ground" x1="55" y1="449" x2="945" y2="449"/>
     ${support(80,120,28,329)}${support(545,120,28,329)}<line class="link" x1="94" y1="130" x2="560" y2="130"/>
     <line class="link" x1="175" y1="286" x2="300" y2="286"/>${wheel(175,286,24,a,palette.input,4)}
     <line class="link" x1="175" y1="286" x2="${crankEnd[0]}" y2="${crankEnd[1]}"/><circle class="input" cx="${crankEnd[0]}" cy="${crankEnd[1]}" r="13"/>
     ${smallGear}${bigGear}<line class="link" x1="405" y1="286" x2="526" y2="286"/><rect class="dark" x="480" y="250" width="92" height="72" rx="14"/>${wheel(526,286,38,drumAngle,palette.transfer,8)}
-    <line class="thin" x1="564" y1="286" x2="735" y2="286"/><line class="thin" x1="735" y1="286" x2="735" y2="${loadY}"/>
-    <rect class="output" x="680" y="${loadY}" width="110" height="66" rx="6"/><text class="s-text s-label" x="735" y="${loadY+40}" text-anchor="middle" fill="#fff">LOAD</text>
+    <line class="thin" x1="526" y1="248" x2="${guidePulley.x}" y2="248"/>${wheel(guidePulley.x,guidePulley.y,guidePulley.r,guideAngle,'#d2e0e5',5)}
+    <path d="M${guidePulley.x} 248 A${guidePulley.r} ${guidePulley.r} 0 0 1 ${guidePulley.x+guidePulley.r} ${guidePulley.y}" fill="none" stroke="#435b67" stroke-width="4"/><line class="thin" x1="${loadX}" y1="${guidePulley.y}" x2="${loadX}" y2="${loadY}"/>
+    <rect class="output" x="${loadX-55}" y="${loadY}" width="110" height="66" rx="6"/><text class="s-text s-label" x="${loadX}" y="${loadY+40}" text-anchor="middle" fill="#fff">LOAD</text>
     ${arrow(75,236,132,236,'input')}${label(70,210,['Input','crank'],palette.input,'start')}
     ${arrow(345,370,398,370,'transfer')}${label(370,400,['gear pair +','drum'],palette.transfer)}
-    ${arrow(846,405,846,340,'output')}${label(846,433,['linear output:','load moves up'],palette.output)}
-    ${small(265,150,'small driver gear')} ${small(404,190,'larger driven gear')} ${small(526,347,'drum')}`;
+    ${arrow(870,405,870,340,'output')}${label(870,433,['linear output:','load moves up'],palette.output)}
+    ${small(265,150,'small driver gear')} ${small(404,190,'larger driven gear')} ${small(526,347,'drum')} ${small(735,324,'fixed guide pulley')}`;
 }
 
 function bicycle(t) {
@@ -209,7 +213,7 @@ function eggbeater(t) {
 }
 
 const systems = [
-  { title:'Hand-Cranked Winch', badge:'Rotary → linear', description:'A person turns the crank. A gear pair changes the turning motion and a drum winds rope to lift a load.', draw:winch, trace:[['Input','A hand turns the crank.','input'],['Mechanisms','Crank shaft → small gear → large gear → drum → rope.','transfer'],['Output','The load moves upward in a straight line.','output']], identify:[['Crank','accepts the input rotary motion'],['Gear pair','transfers rotation and can trade speed for turning force'],['Drum and rope','turn rotation into linear lifting motion']], prompt:'Which part directly changes the drum’s rotary motion into the load’s linear upward motion?' },
+  { title:'Hand-Cranked Winch', badge:'Rotary → linear', description:'A person turns the crank. A gear pair changes the turning motion, a drum winds rope, and a fixed guide pulley turns the rope downward to lift a load.', draw:winch, trace:[['Input','A hand turns the crank.','input'],['Mechanisms','Crank shaft → small gear → large gear → drum → rope → fixed guide pulley.','transfer'],['Output','The load moves upward in a straight line.','output']], identify:[['Crank','accepts the input rotary motion'],['Gear pair','transfers rotation and can trade speed for turning force'],['Drum','winds or unwinds the rope'],['Fixed guide pulley','changes the rope’s direction from horizontal to vertical'],['Rope and load','turn the drum’s rotation into linear lifting motion']], prompt:'Which component changes the rope from a horizontal run into a vertical run that lifts the load?' },
   { title:'Bicycle Drivetrain', badge:'Rotary → rotary + linear', description:'Pedaling rotates the front chainring. The chain transfers rotation to the rear wheel, and the wheel produces forward travel.', draw:bicycle, trace:[['Input','A rider pushes the pedals.','input'],['Mechanisms','Crank and chainring → chain → rear sprocket.','transfer'],['Output','The rear wheel rotates and the bicycle moves forward.','output']], identify:[['Crank','changes pedal force into rotary motion'],['Chain and sprockets','transfer rotary motion across a distance'],['Rear wheel','uses rotation to create linear travel']], prompt:'Why is the chain a mechanism in this system even though it does not create the input or the final output?' },
   { title:'Windshield-Wiper System', badge:'Rotary → oscillating', description:'An electric motor turns continuously. A crank, rigid connecting rod, and rocker make a wiper arm sweep through an arc.', draw:wiper, trace:[['Input','The motor shaft rotates.','input'],['Mechanisms','Motor crank → rigid connecting rod → rocker at a fixed pivot.','transfer'],['Output','The wiper arm oscillates through a repeated arc.','output']], identify:[['Motor','provides continuous rotary input'],['Crank','moves a connection point in a circle'],['Connecting rod','is a rigid link that transfers the crank’s motion'],['Rocker and wiper arm','rotate together around the fixed wiper pivot']], prompt:'What motion transformation occurs between the continuously rotating motor shaft and the wiper arm?' },
   { title:'Sewing-Machine Drive', badge:'Rotary → reciprocating', description:'A wheel and belt deliver rotation to a crank-slider. A fixed needle guide constrains the needle bar so it can move only up and down.', draw:sewing, trace:[['Input','The handwheel rotates.','input'],['Mechanisms','Handwheel → belt → pulley → crank-slider → fixed needle guide.','transfer'],['Output','The needle reciprocates vertically.','output']], identify:[['Belt and pulleys','transfer rotary motion between shafts'],['Crank-slider','converts rotation into straight-line back-and-forth motion'],['Needle guide','constrains the needle bar to vertical linear motion'],['Needle','makes the useful reciprocating output']], prompt:'Why is the fixed needle guide necessary even though the crank-slider already moves the needle bar?' },
