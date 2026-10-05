@@ -4,7 +4,7 @@ const svg = $('systemSvg');
 const nav = $('systemNav');
 let activeIndex = 0;
 let running = true;
-let speed = 0.6;
+let speed = 0.45;
 let elapsed = 0;
 let lastFrame = null;
 
@@ -44,7 +44,11 @@ function wheel(cx,cy,r,rotation,fill=palette.metal,spokes=6) {
   return inside;
 }
 function support(x,y,w,h) { return `<rect class="dark" x="${x}" y="${y}" width="${w}" height="${h}" rx="5"/>`; }
-function background(title, subtitle) { return `${defs()}<rect class="frame" x="9" y="9" width="982" height="517" rx="10"/>${label(500,43,title)}${small(500,67,subtitle)}`; }
+function background() {
+  // The page header already names and explains the system. Keeping the SVG free
+  // of a second title prevents labels from covering the animated mechanism.
+  return `${defs()}<rect class="frame" x="9" y="9" width="982" height="517" rx="10"/>`;
+}
 
 function winch(t) {
   const swing = Math.sin(t*.75); // reversible demonstration: all connected parts reverse together.
@@ -53,7 +57,7 @@ function winch(t) {
   const crankEnd = pt(175,286,72,a);
   const smallGear = gear(300,286,42,10,-a*1.5);
   const bigGear = gear(405,286,68,16,a*.95);
-  return `${background('Hand-Cranked Winch','Rotary input is transferred through gears to a drum that lifts a load.')}
+  return `${background()}
     <line class="ground" x1="55" y1="449" x2="945" y2="449"/>
     ${support(80,120,28,329)}${support(545,120,28,329)}<line class="link" x1="94" y1="130" x2="560" y2="130"/>
     <line class="link" x1="175" y1="286" x2="300" y2="286"/>${wheel(175,286,24,a,palette.input,4)}
@@ -69,10 +73,12 @@ function winch(t) {
 
 function bicycle(t) {
   const a=t*1.5; const rearA=a*1.9; const xTravel=(t*34)%130;
-  const chainA = `<path d="M365 274 C365 243 620 243 620 274 C620 305 365 305 365 274Z" fill="none" stroke="#415866" stroke-width="13" stroke-linecap="round"/>`;
-  const links = [0,1,2,3,4,5,6,7].map(i=>{const x=385+((i*39+xTravel)%220); const y=i%2?299:249; return `<rect x="${x}" y="${y}" width="23" height="6" rx="2" fill="#d7e5eb"/>`;}).join('');
+  // Two straight chain runs meet the top and bottom of each sprocket. The small
+  // light bars move with the chain; they are links, not a motion-path guide.
+  const chainA = `<path d="M382 229 L620 249 A25 25 0 0 1 620 299 L382 319 A45 45 0 0 1 382 229Z" fill="none" stroke="#415866" stroke-width="13" stroke-linejoin="round"/>`;
+  const links = [0,1,2,3,4,5].map(i=>{const f=((i*49+xTravel)%238)/238; const x=382+238*f; const y=229+20*f; return `<rect x="${x-10}" y="${y-3}" width="20" height="6" rx="2" fill="#d7e5eb" transform="rotate(4.8 ${x} ${y})"/>`;}).join('') + [0,1,2,3,4,5].map(i=>{const f=((i*49+xTravel)%238)/238; const x=620-238*f; const y=299+20*f; return `<rect x="${x-10}" y="${y-3}" width="20" height="6" rx="2" fill="#d7e5eb" transform="rotate(4.8 ${x} ${y})"/>`;}).join('');
   const pedal = pt(382,274,78,a);
-  return `${background('Bicycle Drivetrain','Pedal input drives a crank, chain, sprocket, and rear wheel to create forward travel.')}
+  return `${background()}
     <line class="ground" x1="50" y1="443" x2="950" y2="443"/>
     <path d="M70 449 h70 M260 449 h70 M450 449 h70 M640 449 h70 M830 449 h70" stroke="#8eae96" stroke-width="5"/>
     ${wheel(265,342,93,a*.23,'#d7e3e8',8)}${wheel(730,342,93,rearA,'#d7e3e8',8)}
@@ -91,7 +97,7 @@ function wiper(t) {
   const s=Math.sin(t*1.35); const crankA=t*1.35; const pin=pt(210,280,38,crankA); const sliderX=345+s*70;
   const leftAngle=-1.16+s*.42, rightAngle=-1.98-s*.42;
   const leftTip=pt(510,360,132,leftAngle), rightTip=pt(735,360,132,rightAngle);
-  return `${background('Windshield-Wiper System','A motor, crank, and linkage transform rotary motion into oscillating wiper motion.')}
+  return `${background()}
     <path d="M420 130 Q625 60 870 130 L850 380 Q625 435 440 380Z" fill="#dcecf3" stroke="${palette.ink}" stroke-width="5"/>
     <rect class="dark" x="135" y="230" width="82" height="100" rx="13"/>${wheel(210,280,30,crankA,palette.input,6)}<circle class="input" cx="${pin[0]}" cy="${pin[1]}" r="10"/>
     <line class="link" x1="${pin[0]}" y1="${pin[1]}" x2="${sliderX}" y2="300"/><rect class="mechanism" x="${sliderX-18}" y="282" width="36" height="36" rx="5"/>
@@ -106,11 +112,11 @@ function wiper(t) {
 
 function sewing(t) {
   const a=t*1.35; const pin=pt(245,258,48,a); const needleY=292+78*(1-Math.cos(a))/2; const bobbinY=needleY+74;
-  return `${background('Sewing-Machine Drive','A wheel and crank-slider convert rotary motion into a needle that moves up and down.')}
+  return `${background()}
     <path d="M110 400 H790 V340 H595 V230 H350 V400Z" fill="#d8e7eb" stroke="${palette.ink}" stroke-width="5" stroke-linejoin="round"/>
     <rect class="dark" x="130" y="202" width="95" height="112" rx="14"/>${wheel(245,258,68,a,palette.input,8)}<circle class="input" cx="${pin[0]}" cy="${pin[1]}" r="11"/>
-    <path d="M245 190 C330 130 453 130 520 190" fill="none" stroke="#415866" stroke-width="13" stroke-linecap="round"/><path d="M245 326 C330 386 453 386 520 326" fill="none" stroke="#415866" stroke-width="13" stroke-linecap="round"/>
-    ${wheel(520,258,42,a,palette.transfer,7)}
+    <path d="M245 190 C330 166 435 178 520 204" fill="none" stroke="#415866" stroke-width="13" stroke-linecap="round"/><path d="M245 326 C330 350 435 338 520 312" fill="none" stroke="#415866" stroke-width="13" stroke-linecap="round"/>
+    ${wheel(520,258,54,a,palette.transfer,7)}
     <line class="link" x1="${pin[0]}" y1="${pin[1]}" x2="610" y2="${needleY}"/><rect class="mechanism" x="590" y="${needleY-24}" width="40" height="48" rx="5"/>
     <line class="thin" x1="610" y1="${needleY+24}" x2="610" y2="${bobbinY}"/><path d="M605 ${bobbinY} L610 ${bobbinY+22} L615 ${bobbinY}" fill="none" stroke="${palette.ink}" stroke-width="4"/>
     <rect x="475" y="405" width="275" height="24" rx="6" fill="#9ab0ba" stroke="${palette.ink}" stroke-width="4"/>
@@ -123,7 +129,7 @@ function sewing(t) {
 function garage(t) {
   const a=t*1.1; const progress=(Math.sin(a)+1)/2; const trolleyX=330+300*progress; const doorY=333-164*progress;
   const sprocket = gear(205,170,35,12,a,palette.input); const markers=[0,1,2,3,4,5].map(i=>`<rect x="${265+((i*58+t*42)%340)}" y="161" width="26" height="8" rx="3" fill="#d8e5ea"/>`).join('');
-  return `${background('Garage-Door Opener','A motor and chain drive a trolley; the trolley pulls the door upward along its track.')}
+  return `${background()}
     <rect x="55" y="410" width="890" height="38" fill="#dce8df"/><path d="M740 410 V125 Q740 100 765 100 H925" fill="none" stroke="#657d8b" stroke-width="14" stroke-linecap="round"/>
     <rect class="dark" x="140" y="115" width="130" height="110" rx="14"/>${sprocket}<path d="M243 170 H650" fill="none" stroke="#415866" stroke-width="14" stroke-linecap="round"/>${markers}
     <rect class="mechanism" x="${trolleyX-30}" y="146" width="60" height="48" rx="7"/><line class="link" x1="${trolleyX}" y1="194" x2="760" y2="${doorY+15}"/>
@@ -135,18 +141,18 @@ function garage(t) {
 }
 
 function eggbeater(t) {
-  const a=t*1.55; const handle=pt(190,270,70,a); const leftA=-a*.75, rightA=a*.75;
+  const a=t*1.55; const handle=pt(180,270,70,a); const leftA=-a*.75, rightA=a*.75;
   function beater(cx,cy,rotation) { const arms=[0,Math.PI].map(k=>{const b=rotation+k;const [x1,y1]=pt(cx,cy,12,b),[x2,y2]=pt(cx,cy,76,b);return `<line stroke="#536d79" stroke-width="9" stroke-linecap="round" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><ellipse cx="${x2}" cy="${y2}" rx="18" ry="34" fill="none" stroke="#536d79" stroke-width="6" transform="rotate(${deg(b)} ${x2} ${y2})"/>`;}).join(''); return arms; }
-  return `${background('Egg-Beater System','A hand crank drives gears and two shafts so both beaters rotate in opposite directions.')}
-    <rect x="92" y="390" width="800" height="49" fill="#dce8df"/><rect class="dark" x="116" y="205" width="95" height="125" rx="13"/>${wheel(190,270,28,a,palette.input,5)}
-    <line class="link" x1="190" y1="270" x2="${handle[0]}" y2="${handle[1]}"/><circle class="input" cx="${handle[0]}" cy="${handle[1]}" r="13"/>
-    ${gear(315,270,55,14,a,palette.input)}${gear(448,270,78,20,-a*.75)}${gear(585,270,78,20,a*.75)}
-    <line class="link" x1="448" y1="270" x2="448" y2="384"/><line class="link" x1="585" y1="270" x2="585" y2="384"/>
-    ${beater(448,384,leftA)}${beater(585,384,rightA)}
-    ${arrow(52,270,103,270,'input')}${label(45,239,['Input','crank'],palette.input,'start')}
-    ${arrow(342,143,459,143,'transfer')}${label(400,114,['gear train +','two shafts'],palette.transfer)}
-    ${arrow(770,349,846,349,'output')}${label(820,382,['two rotary','beaters'],palette.output)}
-    ${small(516,205,'meshed gears')} ${small(516,473,'mixing bowl')}`;
+  return `${background()}
+    <rect x="92" y="390" width="800" height="49" fill="#dce8df"/><rect class="dark" x="106" y="205" width="92" height="125" rx="13"/>${wheel(180,270,28,a,palette.input,5)}
+    <line class="link" x1="180" y1="270" x2="${handle[0]}" y2="${handle[1]}"/><circle class="input" cx="${handle[0]}" cy="${handle[1]}" r="13"/>
+    <line class="link" x1="208" y1="270" x2="280" y2="270"/>${gear(280,270,48,14,a,palette.input)}${gear(404,270,62,18,-a*.75)}${gear(542,270,62,18,a*.75)}
+    <line class="link" x1="404" y1="270" x2="404" y2="384"/><line class="link" x1="542" y1="270" x2="542" y2="384"/>
+    ${beater(404,384,leftA)}${beater(542,384,rightA)}
+    ${arrow(46,270,94,270,'input')}${label(42,238,['Input','crank'],palette.input,'start')}
+    ${arrow(312,145,450,145,'transfer')}${label(382,112,['meshed gear','train'],palette.transfer)}
+    ${arrow(692,348,792,348,'output')}${label(792,379,['opposite rotary','beater output'],palette.output)}
+    ${small(466,473,'mixing bowl')}`;
 }
 
 const systems = [
