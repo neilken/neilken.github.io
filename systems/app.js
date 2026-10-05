@@ -165,7 +165,10 @@ function sewing(t) {
 function garage(t) {
   // Side-view cable hoist. The drum, pulley, rail, and door do not stretch;
   // only the flexible cable changes the length of its hanging vertical section.
-  const cycle=Math.sin(t*.7); const a=cycle*1.65; const progress=(cycle+1)/2;
+  const cycle=Math.sin(t*.7);
+  // The cable leaves at the drum's top and runs to the right. As the door rises
+  // (progress increases), the drum turns counterclockwise and winds cable in.
+  const a=-cycle*1.65; const progress=(cycle+1)/2;
   const doorY=240-112*progress, doorH=175;
   const drum={x:365,y:154,r:50}; const pulley={x:825,y:104,r:24};
   // The cable exit is fixed on the rim. A cable does not orbit around the
