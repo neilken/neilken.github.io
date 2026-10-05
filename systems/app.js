@@ -163,21 +163,25 @@ function sewing(t) {
 }
 
 function garage(t) {
-  // This is a vertically guided hoist door. The door is a rigid rectangle;
-  // it translates in the rails while a flexible cable changes length.
+  // Side-view cable hoist. The drum, pulley, rail, and door do not stretch;
+  // only the flexible cable changes the length of its hanging vertical section.
   const cycle=Math.sin(t*.7); const a=cycle*1.65; const progress=(cycle+1)/2;
-  const doorY=220-118*progress, doorH=190;
+  const doorY=240-112*progress, doorH=175;
+  const drum={x:365,y:278,r:50}; const pulley={x:825,y:104,r:24};
+  const cableStart=pt(drum.x,drum.y,drum.r,a-.62);
   return `${background()}
-    <rect x="55" y="420" width="890" height="35" fill="#dce8df"/>
-    <rect class="dark" x="115" y="160" width="125" height="115" rx="14"/>${wheel(260,218,38,a,palette.input,7)}
-    <line class="link" x1="298" y1="218" x2="418" y2="218"/>${wheel(455,218,52,a,palette.transfer,8)}
-    <circle class="metal" cx="690" cy="126" r="22"/><path d="M507 185 L690 104 L690 126 L835 ${doorY}" fill="none" stroke="#415866" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
-    <line x1="748" y1="85" x2="748" y2="425" stroke="#657d8b" stroke-width="13"/><line x1="922" y1="85" x2="922" y2="425" stroke="#657d8b" stroke-width="13"/>
-    <rect class="output" x="760" y="${doorY}" width="150" height="${doorH}" rx="3"/>${[1,2,3].map(n=>`<line x1="760" y1="${doorY+n*(doorH/4)}" x2="910" y2="${doorY+n*(doorH/4)}" stroke="#d8ebe0" stroke-width="5"/>`).join('')}
-    ${arrow(58,218,102,218,'input')}${label(49,185,'motor input',palette.input,'start')}
-    ${arrow(350,118,456,118,'transfer')}${label(404,88,['shaft +','winding drum'],palette.transfer)}
-    ${arrow(946,346,946,278,'output')}${label(926,386,['rigid door','moves upward'],palette.output)}
-    ${small(690,82,'guide pulley')} ${small(835,468,'vertical guide rails')}`;
+    <rect x="55" y="430" width="890" height="28" fill="#dce8df"/>
+    <rect class="dark" x="108" y="218" width="112" height="108" rx="14"/><circle class="input" cx="238" cy="278" r="33"/>${wheel(238,278,28,a,palette.input,6)}
+    <line class="link" x1="271" y1="278" x2="${drum.x-50}" y2="278"/>${wheel(drum.x,drum.y,drum.r,a,palette.transfer,8)}
+    <circle class="metal" cx="${pulley.x}" cy="${pulley.y}" r="${pulley.r}"/>${wheel(pulley.x,pulley.y,17,-a*.12,'#d2e0e5',4)}
+    <path d="M${cableStart[0]} ${cableStart[1]} L${pulley.x-18} ${pulley.y-15} Q${pulley.x} ${pulley.y-28} ${pulley.x+18} ${pulley.y-15} L${pulley.x} ${doorY}" fill="none" stroke="#435b67" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="738" y1="80" x2="738" y2="425" stroke="#657d8b" stroke-width="13"/><line x1="912" y1="80" x2="912" y2="425" stroke="#657d8b" stroke-width="13"/>
+    <rect class="output" x="750" y="${doorY}" width="150" height="${doorH}" rx="3"/>${[1,2,3].map(n=>`<line x1="750" y1="${doorY+n*(doorH/4)}" x2="900" y2="${doorY+n*(doorH/4)}" stroke="#d8ebe0" stroke-width="5"/>`).join('')}
+    <circle fill="#435b67" cx="${pulley.x}" cy="${doorY}" r="7"/>
+    ${arrow(52,278,94,278,'input')}${label(48,245,'motor input',palette.input,'start')}
+    ${arrow(340,164,430,164,'transfer')}${label(385,133,['shaft +','winding drum'],palette.transfer)}
+    ${arrow(945,345,945,276,'output')}${label(922,383,['rigid door','moves upward'],palette.output)}
+    ${small(pulley.x,58,'fixed guide pulley')} ${small(825,480,'vertical guide rails')}`;
 }
 
 function eggbeater(t) {
