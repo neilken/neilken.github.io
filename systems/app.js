@@ -104,20 +104,34 @@ function bicycle(t) {
 }
 
 function wiper(t) {
-  const s=Math.sin(t*1.35); const crankA=t*1.35; const pin=pt(210,280,38,crankA); const sliderX=345+s*70;
-  const leftAngle=-1.16+s*.42, rightAngle=-1.98-s*.42;
-  const leftTip=pt(510,360,132,leftAngle), rightTip=pt(735,360,132,rightAngle);
+  // Crank-rocker four-bar: all three bars below are rigid. The pin at P turns
+  // around O, the rod P–R stays one fixed length, and the rocker Q–R swings.
+  const crankAngle = t * 1.25;
+  const O = {x:195, y:328}, Q = {x:590, y:360};
+  const crankLength = 46, rockerLength = 86, rodLength = 370;
+  const [px,py] = pt(O.x,O.y,crankLength,crankAngle);
+  const dx = px-Q.x, dy = py-Q.y, distance = Math.hypot(dx,dy);
+  const ux = dx/distance, uy = dy/distance;
+  const along = (rockerLength*rockerLength - rodLength*rodLength + distance*distance)/(2*distance);
+  const height = Math.sqrt(Math.max(0,rockerLength*rockerLength-along*along));
+  const baseX = Q.x + along*ux, baseY = Q.y + along*uy;
+  const r1 = {x:baseX-height*uy, y:baseY+height*ux};
+  const r2 = {x:baseX+height*uy, y:baseY-height*ux};
+  const R = r1.y < r2.y ? r1 : r2; // retain the upper, continuous assembly branch.
+  const rockerAngle = Math.atan2(R.y-Q.y,R.x-Q.x);
+  const [tipX,tipY] = pt(Q.x,Q.y,174,rockerAngle);
+  const [bladeA1,bladeA2] = [pt(tipX,tipY,40,rockerAngle+Math.PI/2),pt(tipX,tipY,40,rockerAngle-Math.PI/2)];
   return `${background()}
-    <path d="M420 130 Q625 60 870 130 L850 380 Q625 435 440 380Z" fill="#dcecf3" stroke="${palette.ink}" stroke-width="5"/>
-    <rect class="dark" x="135" y="230" width="82" height="100" rx="13"/>${wheel(210,280,30,crankA,palette.input,6)}<circle class="input" cx="${pin[0]}" cy="${pin[1]}" r="10"/>
-    <line class="link" x1="${pin[0]}" y1="${pin[1]}" x2="${sliderX}" y2="300"/><rect class="mechanism" x="${sliderX-18}" y="282" width="36" height="36" rx="5"/>
-    <line class="link" x1="${sliderX}" y1="300" x2="510" y2="360"/><line class="link" x1="${sliderX}" y1="300" x2="735" y2="360"/>
-    <circle class="mechanism" cx="510" cy="360" r="18"/><circle class="mechanism" cx="735" cy="360" r="18"/>
-    <line stroke="#1d3543" stroke-width="13" stroke-linecap="round" x1="510" y1="360" x2="${leftTip[0]}" y2="${leftTip[1]}"/><line stroke="#1d3543" stroke-width="13" stroke-linecap="round" x1="735" y1="360" x2="${rightTip[0]}" y2="${rightTip[1]}"/>
-    ${arrow(88,279,124,279,'input')}${label(58,250,['Input','motor'],palette.input,'start')}
-    ${arrow(298,190,420,190,'transfer')}${label(350,160,['crank +','linkage'],palette.transfer)}
-    ${arrow(885,325,924,287,'output')}${label(878,365,['oscillating','wipers'],palette.output)}
-    ${small(625,104,'windshield')} ${small(355,334,'moving linkage')}`;
+    <path d="M375 112 Q640 44 900 112 L870 395 Q640 442 402 395Z" fill="#dcecf3" stroke="${palette.ink}" stroke-width="5"/>
+    <rect class="dark" x="116" y="263" width="92" height="130" rx="13"/>${wheel(O.x,O.y,32,crankAngle,palette.input,6)}
+    <circle class="input" cx="${px}" cy="${py}" r="11"/><line class="link" x1="${px}" y1="${py}" x2="${R.x}" y2="${R.y}"/>
+    <line class="link" x1="${Q.x}" y1="${Q.y}" x2="${R.x}" y2="${R.y}"/><circle class="mechanism" cx="${Q.x}" cy="${Q.y}" r="18"/><circle class="mechanism" cx="${R.x}" cy="${R.y}" r="11"/>
+    <line stroke="#1d3543" stroke-width="12" stroke-linecap="round" x1="${Q.x}" y1="${Q.y}" x2="${tipX}" y2="${tipY}"/>
+    <line stroke="#1d3543" stroke-width="9" stroke-linecap="round" x1="${bladeA1[0]}" y1="${bladeA1[1]}" x2="${bladeA2[0]}" y2="${bladeA2[1]}"/>
+    ${arrow(51,328,100,328,'input')}${label(45,294,'motor input',palette.input,'start')}
+    ${arrow(334,192,448,192,'transfer')}${label(391,162,'rigid crank + connecting rod',palette.transfer)}
+    ${arrow(820,326,885,284,'output')}${label(814,364,'oscillating wiper arm',palette.output)}
+    ${small(637,91,'windshield')}${small(O.x,430,'motor shaft')} ${small(Q.x,430,'fixed wiper pivot')}`;
 }
 
 function sewing(t) {
@@ -168,7 +182,7 @@ function eggbeater(t) {
 const systems = [
   { title:'Hand-Cranked Winch', badge:'Rotary → linear', description:'A person turns the crank. A gear pair changes the turning motion and a drum winds rope to lift a load.', draw:winch, trace:[['Input','A hand turns the crank.','input'],['Mechanisms','Crank shaft → small gear → large gear → drum → rope.','transfer'],['Output','The load moves upward in a straight line.','output']], identify:[['Crank','accepts the input rotary motion'],['Gear pair','transfers rotation and can trade speed for turning force'],['Drum and rope','turn rotation into linear lifting motion']], prompt:'Which part directly changes the drum’s rotary motion into the load’s linear upward motion?' },
   { title:'Bicycle Drivetrain', badge:'Rotary → rotary + linear', description:'Pedaling rotates the front chainring. The chain transfers rotation to the rear wheel, and the wheel produces forward travel.', draw:bicycle, trace:[['Input','A rider pushes the pedals.','input'],['Mechanisms','Crank and chainring → chain → rear sprocket.','transfer'],['Output','The rear wheel rotates and the bicycle moves forward.','output']], identify:[['Crank','changes pedal force into rotary motion'],['Chain and sprockets','transfer rotary motion across a distance'],['Rear wheel','uses rotation to create linear travel']], prompt:'Why is the chain a mechanism in this system even though it does not create the input or the final output?' },
-  { title:'Windshield Wipers', badge:'Rotary → oscillating', description:'An electric motor turns continuously. A crank and linkage make the wipers sweep back and forth through an arc.', draw:wiper, trace:[['Input','The motor shaft rotates.','input'],['Mechanisms','Motor crank → moving linkage → wiper pivots.','transfer'],['Output','The wiper arms oscillate through repeated arcs.','output']], identify:[['Motor','provides continuous rotary input'],['Crank','moves a connection point in a circle'],['Linkage','transfers motion to both wiper pivots'],['Wiper arms','oscillate to clear the glass']], prompt:'What motion transformation occurs between the continuously rotating motor shaft and the wiper arms?' },
+  { title:'Windshield-Wiper System', badge:'Rotary → oscillating', description:'An electric motor turns continuously. A crank, rigid connecting rod, and rocker make a wiper arm sweep through an arc.', draw:wiper, trace:[['Input','The motor shaft rotates.','input'],['Mechanisms','Motor crank → rigid connecting rod → rocker at a fixed pivot.','transfer'],['Output','The wiper arm oscillates through a repeated arc.','output']], identify:[['Motor','provides continuous rotary input'],['Crank','moves a connection point in a circle'],['Connecting rod','is a rigid link that transfers the crank’s motion'],['Rocker and wiper arm','rotate together around the fixed wiper pivot']], prompt:'What motion transformation occurs between the continuously rotating motor shaft and the wiper arm?' },
   { title:'Sewing-Machine Drive', badge:'Rotary → reciprocating', description:'A wheel and belt deliver rotation to a crank-slider. The crank-slider moves the needle repeatedly up and down.', draw:sewing, trace:[['Input','The handwheel rotates.','input'],['Mechanisms','Handwheel → belt → pulley → crank-slider.','transfer'],['Output','The needle reciprocates vertically.','output']], identify:[['Belt and pulleys','transfer rotary motion between shafts'],['Crank-slider','converts rotation into straight-line back-and-forth motion'],['Needle','makes the useful reciprocating output']], prompt:'Which mechanism is responsible for changing rotary motion into the needle’s straight-line motion?' },
   { title:'Garage-Door Opener', badge:'Rotary → linear', description:'A motor turns a sprocket. A chain moves a trolley, which pulls the door upward along its track.', draw:garage, trace:[['Input','The electric motor rotates.','input'],['Mechanisms','Motor sprocket → chain → trolley → door arm.','transfer'],['Output','The door moves upward along a guided path.','output']], identify:[['Motor sprocket','drives the chain'],['Chain','transfers pulling motion along the rail'],['Trolley','moves along the rail and pulls the door'],['Track','constrains the door’s movement']], prompt:'What component keeps the door moving in a controlled path instead of swinging freely?' },
   { title:'Egg-Beater System', badge:'Rotary → rotary', description:'Turning one crank drives a train of meshed gears. The gear train turns two beaters in opposite directions.', draw:eggbeater, trace:[['Input','A hand rotates the crank.','input'],['Mechanisms','Crank shaft → gear train → two vertical shafts.','transfer'],['Output','Two beaters rotate in opposite directions.','output']], identify:[['Crank','provides rotary input'],['Gear train','transfers motion and reverses direction between meshed gears'],['Shafts','deliver rotation to the beaters'],['Beaters','produce the useful mixing output']], prompt:'Why do the two beaters rotate in opposite directions when their gears mesh?' }
