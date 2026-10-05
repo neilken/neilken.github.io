@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mechanical Systems Motion Lab</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <p class="eyebrow">Engineering Essentials · Unit 2.3</p>
+    <h1>Mechanical Systems Motion Lab</h1>
+    <p class="subtitle">A mechanical system uses <strong>connected mechanisms</strong> to transfer energy and produce a useful output.</p>
+  </header>
+
+  <main>
+    <section class="directions" aria-label="Directions">
+      <h2>How to use this lab</h2>
+      <ol>
+        <li>Select a system and press <strong>Play</strong>.</li>
+        <li>Trace the energy from the <span class="input-word">input</span>, through the <span class="transfer-word">mechanisms</span>, to the <span class="output-word">output</span>.</li>
+        <li>Use the labels and the system trace to identify the job of each mechanism.</li>
+      </ol>
+    </section>
+
+    <nav id="systemNav" class="system-nav" aria-label="Mechanical systems"></nav>
+
+    <section class="lab-grid">
+      <section class="animation-panel" aria-label="Interactive mechanical system animation">
+        <div class="panel-heading">
+          <div>
+            <p id="systemNumber" class="eyebrow">System 1 of 6</p>
+            <h2 id="systemTitle">Hand-Cranked Winch</h2>
+          </div>
+          <span id="motionBadge" class="motion-badge"></span>
+        </div>
+        <p id="systemDescription" class="description"></p>
+        <div class="svg-wrap">
+          <svg id="systemSvg" viewBox="0 0 1000 535" role="img" aria-labelledby="systemTitle systemDescription"></svg>
+        </div>
+        <div class="controls" aria-label="Animation controls">
+          <button id="playButton" type="button">Pause</button>
+          <button id="resetButton" class="secondary" type="button">Reset</button>
+          <label for="speed">Animation speed</label>
+          <input id="speed" type="range" min="0.25" max="1.25" value="0.6" step="0.05">
+          <output id="speedValue" for="speed">0.60×</output>
+        </div>
+      </section>
+
+      <aside class="study-panel">
+        <section>
+          <h2>System trace</h2>
+          <div id="trace" class="trace"></div>
+        </section>
+        <section>
+          <h2>What to identify</h2>
+          <dl id="identifyList"></dl>
+        </section>
+        <section class="stop-explain">
+          <h2>Stop &amp; explain</h2>
+          <p id="prompt"></p>
+        </section>
+      </aside>
+    </section>
+
+    <section class="key">
+      <h2>Reading the diagram</h2>
+      <p><span class="swatch input"></span><strong>Input</strong> starts the system. <span class="swatch transfer"></span><strong>Mechanisms</strong> transfer or transform motion. <span class="swatch output"></span><strong>Output</strong> is the useful result.</p>
+    </section>
+  </main>
+
+  <footer>Animations are simplified engineering diagrams. They show relationships among real mechanism types; dimensions are not to scale.</footer>
+  <script src="app.js"></script>
+</body>
+</html>
