@@ -55,15 +55,18 @@ function winch(t) {
   const a = swing * .95;
   const loadY = 408 - 85 * ((swing + 1) / 2);
   const crankEnd = pt(175,286,72,a);
-  const smallGear = gear(300,286,42,10,-a*1.5);
-  const bigGear = gear(405,286,68,16,a*.95);
+  // The small gear is on the crank shaft. The larger gear turns in the
+  // opposite direction at the correct slower angular speed (42 / 68).
+  const smallGear = gear(300,286,42,10,a);
+  const bigGear = gear(405,286,68,16,-a*(42/68));
+  const drumAngle = -a*(42/68);
   return `${background()}
     <line class="ground" x1="55" y1="449" x2="945" y2="449"/>
     ${support(80,120,28,329)}${support(545,120,28,329)}<line class="link" x1="94" y1="130" x2="560" y2="130"/>
     <line class="link" x1="175" y1="286" x2="300" y2="286"/>${wheel(175,286,24,a,palette.input,4)}
     <line class="link" x1="175" y1="286" x2="${crankEnd[0]}" y2="${crankEnd[1]}"/><circle class="input" cx="${crankEnd[0]}" cy="${crankEnd[1]}" r="13"/>
-    ${smallGear}${bigGear}<rect class="dark" x="480" y="250" width="92" height="72" rx="14"/>${wheel(526,286,38,a*.95,palette.transfer,8)}
-    <line class="thin" x1="526" y1="248" x2="526" y2="124"/><line class="thin" x1="526" y1="124" x2="735" y2="124"/><line class="thin" x1="735" y1="124" x2="735" y2="${loadY}"/>
+    ${smallGear}${bigGear}<line class="link" x1="405" y1="286" x2="526" y2="286"/><rect class="dark" x="480" y="250" width="92" height="72" rx="14"/>${wheel(526,286,38,drumAngle,palette.transfer,8)}
+    <line class="thin" x1="564" y1="286" x2="735" y2="286"/><line class="thin" x1="735" y1="286" x2="735" y2="${loadY}"/>
     <rect class="output" x="680" y="${loadY}" width="110" height="66" rx="6"/><text class="s-text s-label" x="735" y="${loadY+40}" text-anchor="middle" fill="#fff">LOAD</text>
     ${arrow(75,236,132,236,'input')}${label(70,210,['Input','crank'],palette.input,'start')}
     ${arrow(345,370,398,370,'transfer')}${label(370,400,['gear pair +','drum'],palette.transfer)}
@@ -135,42 +138,55 @@ function wiper(t) {
 }
 
 function sewing(t) {
-  const a=t*1.35; const pin=pt(245,258,48,a); const needleY=292+78*(1-Math.cos(a))/2; const bobbinY=needleY+74;
+  // Open belt: both pulleys turn in the same direction, but the smaller driven
+  // pulley spins faster. The crank pin, connecting rod, and needle slider form
+  // a true fixed-length crank-slider linkage.
+  const handAngle=t*1.15;
+  const drivenAngle=handAngle*(68/54);
+  const driver={x:245,y:258,r:68}; const driven={x:520,y:258,r:54};
+  const [pinX,pinY]=pt(driven.x,driven.y,40,drivenAngle);
+  const sliderX=650, rodLength=178;
+  const needleY=pinY+Math.sqrt(Math.max(0,rodLength*rodLength-(sliderX-pinX)*(sliderX-pinX)));
+  const bobbinY=needleY+74;
   return `${background()}
-    <path d="M110 400 H790 V340 H595 V230 H350 V400Z" fill="#d8e7eb" stroke="${palette.ink}" stroke-width="5" stroke-linejoin="round"/>
-    <rect class="dark" x="130" y="202" width="95" height="112" rx="14"/>${wheel(245,258,68,a,palette.input,8)}<circle class="input" cx="${pin[0]}" cy="${pin[1]}" r="11"/>
+    <path d="M110 470 H790 V340 H595 V230 H350 V470Z" fill="#d8e7eb" stroke="${palette.ink}" stroke-width="5" stroke-linejoin="round"/>
+    <rect class="dark" x="130" y="202" width="95" height="112" rx="14"/>${wheel(driver.x,driver.y,driver.r,handAngle,palette.input,8)}
     <path d="M245 190 C330 166 435 178 520 204" fill="none" stroke="#415866" stroke-width="13" stroke-linecap="round"/><path d="M245 326 C330 350 435 338 520 312" fill="none" stroke="#415866" stroke-width="13" stroke-linecap="round"/>
-    ${wheel(520,258,54,a,palette.transfer,7)}
-    <line class="link" x1="${pin[0]}" y1="${pin[1]}" x2="610" y2="${needleY}"/><rect class="mechanism" x="590" y="${needleY-24}" width="40" height="48" rx="5"/>
-    <line class="thin" x1="610" y1="${needleY+24}" x2="610" y2="${bobbinY}"/><path d="M605 ${bobbinY} L610 ${bobbinY+22} L615 ${bobbinY}" fill="none" stroke="${palette.ink}" stroke-width="4"/>
-    <rect x="475" y="405" width="275" height="24" rx="6" fill="#9ab0ba" stroke="${palette.ink}" stroke-width="4"/>
+    ${wheel(driven.x,driven.y,driven.r,drivenAngle,palette.transfer,7)}<circle class="input" cx="${pinX}" cy="${pinY}" r="10"/>
+    <line class="link" x1="${pinX}" y1="${pinY}" x2="${sliderX}" y2="${needleY}"/><rect class="mechanism" x="${sliderX-20}" y="${needleY-24}" width="40" height="48" rx="5"/>
+    <line class="thin" x1="${sliderX}" y1="${needleY+24}" x2="${sliderX}" y2="${bobbinY}"/><path d="M${sliderX-5} ${bobbinY} L${sliderX} ${bobbinY+22} L${sliderX+5} ${bobbinY}" fill="none" stroke="${palette.ink}" stroke-width="4"/>
+    <rect x="500" y="470" width="260" height="24" rx="6" fill="#9ab0ba" stroke="${palette.ink}" stroke-width="4"/>
     ${arrow(80,258,115,258,'input')}${label(55,229,['Input','handwheel'],palette.input,'start')}
     ${arrow(366,114,440,114,'transfer')}${label(404,85,['belt + crank-slider'],palette.transfer)}
-    ${arrow(700,355,700,310,'output')}${label(770,333,['reciprocating','needle'],palette.output)}
-    ${small(518,337,'belt pulley')}${small(610,450,'fabric')}`;
+    ${arrow(742,355,742,310,'output')}${label(820,333,['reciprocating','needle'],palette.output)}
+    ${small(518,337,'belt pulley')}${small(650,515,'fabric')}`;
 }
 
 function garage(t) {
-  const a=t*1.1; const progress=(Math.sin(a)+1)/2; const trolleyX=330+300*progress; const doorY=333-164*progress;
-  const sprocket = gear(205,170,35,12,a,palette.input); const markers=[0,1,2,3,4,5].map(i=>`<rect x="${265+((i*58+t*42)%340)}" y="161" width="26" height="8" rx="3" fill="#d8e5ea"/>`).join('');
+  // This is a vertically guided hoist door. The door is a rigid rectangle;
+  // it translates in the rails while a flexible cable changes length.
+  const cycle=Math.sin(t*.7); const a=cycle*1.65; const progress=(cycle+1)/2;
+  const doorY=220-118*progress, doorH=190;
   return `${background()}
-    <rect x="55" y="410" width="890" height="38" fill="#dce8df"/><path d="M740 410 V125 Q740 100 765 100 H925" fill="none" stroke="#657d8b" stroke-width="14" stroke-linecap="round"/>
-    <rect class="dark" x="140" y="115" width="130" height="110" rx="14"/>${sprocket}<path d="M243 170 H650" fill="none" stroke="#415866" stroke-width="14" stroke-linecap="round"/>${markers}
-    <rect class="mechanism" x="${trolleyX-30}" y="146" width="60" height="48" rx="7"/><line class="link" x1="${trolleyX}" y1="194" x2="760" y2="${doorY+15}"/>
-    <rect class="output" x="765" y="${doorY}" width="150" height="${410-doorY}"/><line x1="765" y1="${doorY+42}" x2="915" y2="${doorY+42}" stroke="#d8ebe0" stroke-width="5"/><line x1="765" y1="${doorY+84}" x2="915" y2="${doorY+84}" stroke="#d8ebe0" stroke-width="5"/>
-    ${arrow(77,171,126,171,'input')}${label(61,142,['Input','motor'],palette.input,'start')}
-    ${arrow(395,95,478,95,'transfer')}${label(436,66,['chain + trolley'],palette.transfer)}
-    ${arrow(945,350,945,280,'output')}${label(925,385,['linear output:','door rises'],palette.output)}
-    ${small(520,221,'overhead chain rail')}`;
+    <rect x="55" y="420" width="890" height="35" fill="#dce8df"/>
+    <rect class="dark" x="115" y="160" width="125" height="115" rx="14"/>${wheel(260,218,38,a,palette.input,7)}
+    <line class="link" x1="298" y1="218" x2="418" y2="218"/>${wheel(455,218,52,a,palette.transfer,8)}
+    <circle class="metal" cx="690" cy="126" r="22"/><path d="M507 185 L690 104 L690 126 L835 ${doorY}" fill="none" stroke="#415866" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="748" y1="85" x2="748" y2="425" stroke="#657d8b" stroke-width="13"/><line x1="922" y1="85" x2="922" y2="425" stroke="#657d8b" stroke-width="13"/>
+    <rect class="output" x="760" y="${doorY}" width="150" height="${doorH}" rx="3"/>${[1,2,3].map(n=>`<line x1="760" y1="${doorY+n*(doorH/4)}" x2="910" y2="${doorY+n*(doorH/4)}" stroke="#d8ebe0" stroke-width="5"/>`).join('')}
+    ${arrow(58,218,102,218,'input')}${label(49,185,'motor input',palette.input,'start')}
+    ${arrow(350,118,456,118,'transfer')}${label(404,88,['shaft +','winding drum'],palette.transfer)}
+    ${arrow(946,346,946,278,'output')}${label(926,386,['rigid door','moves upward'],palette.output)}
+    ${small(690,82,'guide pulley')} ${small(835,468,'vertical guide rails')}`;
 }
 
 function eggbeater(t) {
-  const a=t*1.55; const handle=pt(180,270,70,a); const leftA=-a*.75, rightA=a*.75;
+  const a=t*1.55; const handle=pt(180,270,70,a); const drivenA=a*(48/62); const leftA=-drivenA, rightA=drivenA;
   function beater(cx,cy,rotation) { const arms=[0,Math.PI].map(k=>{const b=rotation+k;const [x1,y1]=pt(cx,cy,12,b),[x2,y2]=pt(cx,cy,76,b);return `<line stroke="#536d79" stroke-width="9" stroke-linecap="round" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><ellipse cx="${x2}" cy="${y2}" rx="18" ry="34" fill="none" stroke="#536d79" stroke-width="6" transform="rotate(${deg(b)} ${x2} ${y2})"/>`;}).join(''); return arms; }
   return `${background()}
     <rect x="92" y="390" width="800" height="49" fill="#dce8df"/><rect class="dark" x="106" y="205" width="92" height="125" rx="13"/>${wheel(180,270,28,a,palette.input,5)}
     <line class="link" x1="180" y1="270" x2="${handle[0]}" y2="${handle[1]}"/><circle class="input" cx="${handle[0]}" cy="${handle[1]}" r="13"/>
-    <line class="link" x1="208" y1="270" x2="280" y2="270"/>${gear(280,270,48,14,a,palette.input)}${gear(404,270,62,18,-a*.75)}${gear(542,270,62,18,a*.75)}
+    <line class="link" x1="208" y1="270" x2="280" y2="270"/>${gear(280,270,48,14,a,palette.input)}${gear(404,270,62,18,-drivenA)}${gear(542,270,62,18,drivenA)}
     <line class="link" x1="404" y1="270" x2="404" y2="384"/><line class="link" x1="542" y1="270" x2="542" y2="384"/>
     ${beater(404,384,leftA)}${beater(542,384,rightA)}
     ${arrow(46,270,94,270,'input')}${label(42,238,['Input','crank'],palette.input,'start')}
@@ -184,7 +200,7 @@ const systems = [
   { title:'Bicycle Drivetrain', badge:'Rotary → rotary + linear', description:'Pedaling rotates the front chainring. The chain transfers rotation to the rear wheel, and the wheel produces forward travel.', draw:bicycle, trace:[['Input','A rider pushes the pedals.','input'],['Mechanisms','Crank and chainring → chain → rear sprocket.','transfer'],['Output','The rear wheel rotates and the bicycle moves forward.','output']], identify:[['Crank','changes pedal force into rotary motion'],['Chain and sprockets','transfer rotary motion across a distance'],['Rear wheel','uses rotation to create linear travel']], prompt:'Why is the chain a mechanism in this system even though it does not create the input or the final output?' },
   { title:'Windshield-Wiper System', badge:'Rotary → oscillating', description:'An electric motor turns continuously. A crank, rigid connecting rod, and rocker make a wiper arm sweep through an arc.', draw:wiper, trace:[['Input','The motor shaft rotates.','input'],['Mechanisms','Motor crank → rigid connecting rod → rocker at a fixed pivot.','transfer'],['Output','The wiper arm oscillates through a repeated arc.','output']], identify:[['Motor','provides continuous rotary input'],['Crank','moves a connection point in a circle'],['Connecting rod','is a rigid link that transfers the crank’s motion'],['Rocker and wiper arm','rotate together around the fixed wiper pivot']], prompt:'What motion transformation occurs between the continuously rotating motor shaft and the wiper arm?' },
   { title:'Sewing-Machine Drive', badge:'Rotary → reciprocating', description:'A wheel and belt deliver rotation to a crank-slider. The crank-slider moves the needle repeatedly up and down.', draw:sewing, trace:[['Input','The handwheel rotates.','input'],['Mechanisms','Handwheel → belt → pulley → crank-slider.','transfer'],['Output','The needle reciprocates vertically.','output']], identify:[['Belt and pulleys','transfer rotary motion between shafts'],['Crank-slider','converts rotation into straight-line back-and-forth motion'],['Needle','makes the useful reciprocating output']], prompt:'Which mechanism is responsible for changing rotary motion into the needle’s straight-line motion?' },
-  { title:'Garage-Door Opener', badge:'Rotary → linear', description:'A motor turns a sprocket. A chain moves a trolley, which pulls the door upward along its track.', draw:garage, trace:[['Input','The electric motor rotates.','input'],['Mechanisms','Motor sprocket → chain → trolley → door arm.','transfer'],['Output','The door moves upward along a guided path.','output']], identify:[['Motor sprocket','drives the chain'],['Chain','transfers pulling motion along the rail'],['Trolley','moves along the rail and pulls the door'],['Track','constrains the door’s movement']], prompt:'What component keeps the door moving in a controlled path instead of swinging freely?' },
+  { title:'Motorized Hoist Door', badge:'Rotary → linear', description:'A motor turns a shaft and winding drum. A flexible cable passes over a guide pulley and lifts a rigid door in vertical rails.', draw:garage, trace:[['Input','The electric motor rotates.','input'],['Mechanisms','Motor shaft → winding drum → cable → guide pulley.','transfer'],['Output','The rigid door moves upward in the vertical rails.','output']], identify:[['Motor and shaft','provide rotary input'],['Winding drum','winds or unwinds the flexible cable'],['Guide pulley','changes the cable’s direction'],['Vertical rails','constrain the rigid door to a straight path']], prompt:'Which components are rigid, and which component is allowed to change its shape and length as the door moves?' },
   { title:'Egg-Beater System', badge:'Rotary → rotary', description:'Turning one crank drives a train of meshed gears. The gear train turns two beaters in opposite directions.', draw:eggbeater, trace:[['Input','A hand rotates the crank.','input'],['Mechanisms','Crank shaft → gear train → two vertical shafts.','transfer'],['Output','Two beaters rotate in opposite directions.','output']], identify:[['Crank','provides rotary input'],['Gear train','transfers motion and reverses direction between meshed gears'],['Shafts','deliver rotation to the beaters'],['Beaters','produce the useful mixing output']], prompt:'Why do the two beaters rotate in opposite directions when their gears mesh?' }
 ];
 
