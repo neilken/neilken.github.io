@@ -72,25 +72,35 @@ function winch(t) {
 }
 
 function bicycle(t) {
-  const a=t*1.5; const rearA=a*1.9; const xTravel=(t*34)%130;
-  // Two straight chain runs meet the top and bottom of each sprocket. The small
-  // light bars move with the chain; they are links, not a motion-path guide.
-  const chainA = `<path d="M382 229 L620 249 A25 25 0 0 1 620 299 L382 319 A45 45 0 0 1 382 229Z" fill="none" stroke="#415866" stroke-width="13" stroke-linejoin="round"/>`;
-  const links = [0,1,2,3,4,5].map(i=>{const f=((i*49+xTravel)%238)/238; const x=382+238*f; const y=229+20*f; return `<rect x="${x-10}" y="${y-3}" width="20" height="6" rx="2" fill="#d7e5eb" transform="rotate(4.8 ${x} ${y})"/>`;}).join('') + [0,1,2,3,4,5].map(i=>{const f=((i*49+xTravel)%238)/238; const x=620-238*f; const y=299+20*f; return `<rect x="${x-10}" y="${y-3}" width="20" height="6" rx="2" fill="#d7e5eb" transform="rotate(4.8 ${x} ${y})"/>`;}).join('');
-  const pedal = pt(382,274,78,a);
+  // A deliberately uncluttered side view: the drivetrain is larger than the
+  // frame so students can trace the same motion through every connected part.
+  const a = t * 1.15;
+  const rearA = a * (50 / 26);
+  const pedal = pt(430,340,82,a);
+  const roadShift = (t * 36) % 130;
+  const topLinks = Array.from({length:7}, (_,i) => {
+    const f = ((i * 47 + roadShift) % 290) / 290;
+    const x = 430 + 290 * f, y = 290 + 24 * f;
+    return `<rect x="${x-10}" y="${y-3}" width="20" height="6" rx="2" fill="#f6d46a" transform="rotate(4.7 ${x} ${y})"/>`;
+  }).join('');
+  const bottomLinks = Array.from({length:7}, (_,i) => {
+    const f = ((i * 47 + roadShift) % 290) / 290;
+    const x = 720 - 290 * f, y = 366 + 24 * f;
+    return `<rect x="${x-10}" y="${y-3}" width="20" height="6" rx="2" fill="#f6d46a" transform="rotate(4.7 ${x} ${y})"/>`;
+  }).join('');
   return `${background()}
-    <line class="ground" x1="50" y1="443" x2="950" y2="443"/>
-    <path d="M70 449 h70 M260 449 h70 M450 449 h70 M640 449 h70 M830 449 h70" stroke="#8eae96" stroke-width="5"/>
-    ${wheel(265,342,93,a*.23,'#d7e3e8',8)}${wheel(730,342,93,rearA,'#d7e3e8',8)}
-    <path d="M265 342 L410 215 L526 342 L340 342 L470 255 L595 342 L730 342" fill="none" stroke="${palette.ink}" stroke-width="10" stroke-linejoin="round"/>
-    <line class="link" x1="410" y1="215" x2="378" y2="184"/><line class="link" x1="378" y1="184" x2="348" y2="184"/>
-    <line class="link" x1="470" y1="255" x2="452" y2="195"/><line class="link" x1="435" y1="195" x2="474" y2="195"/>
-    ${gear(382,274,45,18,a,palette.input)}${gear(620,274,25,12,a*1.9,palette.transfer)}${chainA}${links}
-    <line class="link" x1="382" y1="274" x2="${pedal[0]}" y2="${pedal[1]}"/><rect class="input" x="${pedal[0]-24}" y="${pedal[1]-7}" width="48" height="14" rx="6" transform="rotate(${deg(a)} ${pedal[0]} ${pedal[1]})"/>
-    ${arrow(112,260,172,260,'input')}${label(74,235,['Input','pedals'],palette.input,'start')}
-    ${arrow(490,158,548,158,'transfer')}${label(520,126,['crank → chain →','rear sprocket'],palette.transfer)}
-    ${arrow(856,397,927,397,'output')}${label(858,430,['rotary wheel +','linear travel'],palette.output)}
-    ${small(382,350,'front chainring')}${small(620,324,'rear sprocket')}`;
+    <line class="ground" x1="52" y1="455" x2="948" y2="455"/>
+    <path d="M${60-roadShift} 462 h78 M${190-roadShift} 462 h78 M${320-roadShift} 462 h78 M${450-roadShift} 462 h78 M${580-roadShift} 462 h78 M${710-roadShift} 462 h78 M${840-roadShift} 462 h78" stroke="#8eae96" stroke-width="5"/>
+    ${wheel(170,340,104,rearA,'#dce7eb',8)}${wheel(720,340,104,rearA,'#dff0e7',8)}
+    <path d="M170 340 L350 205 L535 205 L430 340 L535 205 L720 340 L430 340" fill="none" stroke="#26566e" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="350" y1="205" x2="322" y2="167" class="link"/><line x1="298" y1="167" x2="346" y2="167" class="link"/>
+    <line x1="535" y1="205" x2="507" y2="158" class="link"/><line x1="483" y1="158" x2="532" y2="158" class="link"/>
+    <line x1="535" y1="205" x2="170" y2="340" class="link"/>
+    <path d="M430 290 L720 314 A26 26 0 0 1 720 366 L430 390 A50 50 0 0 1 430 290Z" fill="none" stroke="#405661" stroke-width="15" stroke-linejoin="round"/>
+    ${topLinks}${bottomLinks}
+    ${gear(430,340,50,18,a,palette.input)}${gear(720,340,26,12,rearA,palette.transfer)}
+    <line class="link" x1="430" y1="340" x2="${pedal[0]}" y2="${pedal[1]}"/><rect class="input" x="${pedal[0]-25}" y="${pedal[1]-7}" width="50" height="14" rx="6" transform="rotate(${deg(a)} ${pedal[0]} ${pedal[1]})"/>
+    ${small(430,425,'front chainring')}${small(720,402,'rear sprocket')}`;
 }
 
 function wiper(t) {
