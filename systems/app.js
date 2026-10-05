@@ -168,20 +168,24 @@ function garage(t) {
   const cycle=Math.sin(t*.7); const a=cycle*1.65; const progress=(cycle+1)/2;
   const doorY=240-112*progress, doorH=175;
   const drum={x:365,y:278,r:50}; const pulley={x:825,y:104,r:24};
-  const cableStart=pt(drum.x,drum.y,drum.r,a-.62);
+  // The cable exit is fixed on the rim. A cable does not orbit around the
+  // drum's center; the drum winds material underneath the fixed exit point.
+  const cableExit={x:400,y:242};
   return `${background()}
     <rect x="55" y="430" width="890" height="28" fill="#dce8df"/>
     <rect class="dark" x="108" y="218" width="112" height="108" rx="14"/><circle class="input" cx="238" cy="278" r="33"/>${wheel(238,278,28,a,palette.input,6)}
     <line class="link" x1="271" y1="278" x2="${drum.x-50}" y2="278"/>${wheel(drum.x,drum.y,drum.r,a,palette.transfer,8)}
     <circle class="metal" cx="${pulley.x}" cy="${pulley.y}" r="${pulley.r}"/>${wheel(pulley.x,pulley.y,17,-a*.12,'#d2e0e5',4)}
-    <path d="M${cableStart[0]} ${cableStart[1]} L${pulley.x-18} ${pulley.y-15} Q${pulley.x} ${pulley.y-28} ${pulley.x+18} ${pulley.y-15} L${pulley.x} ${doorY}" fill="none" stroke="#435b67" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M${cableExit.x} ${cableExit.y} A50 50 0 0 0 337 235" fill="none" stroke="#f0bb36" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="${cableExit.x}" cy="${cableExit.y}" r="7" fill="#f0bb36" stroke="${palette.ink}" stroke-width="3"/>
+    <path d="M${cableExit.x} ${cableExit.y} L${pulley.x-18} ${pulley.y-15} Q${pulley.x} ${pulley.y-28} ${pulley.x+18} ${pulley.y-15} L${pulley.x} ${doorY}" fill="none" stroke="#435b67" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
     <line x1="738" y1="80" x2="738" y2="425" stroke="#657d8b" stroke-width="13"/><line x1="912" y1="80" x2="912" y2="425" stroke="#657d8b" stroke-width="13"/>
     <rect class="output" x="750" y="${doorY}" width="150" height="${doorH}" rx="3"/>${[1,2,3].map(n=>`<line x1="750" y1="${doorY+n*(doorH/4)}" x2="900" y2="${doorY+n*(doorH/4)}" stroke="#d8ebe0" stroke-width="5"/>`).join('')}
     <circle fill="#435b67" cx="${pulley.x}" cy="${doorY}" r="7"/>
     ${arrow(52,278,94,278,'input')}${label(48,245,'motor input',palette.input,'start')}
     ${arrow(340,164,430,164,'transfer')}${label(385,133,['shaft +','winding drum'],palette.transfer)}
     ${arrow(945,345,945,276,'output')}${label(922,383,['rigid door','moves upward'],palette.output)}
-    ${small(pulley.x,58,'fixed guide pulley')} ${small(825,480,'vertical guide rails')}`;
+    ${small(pulley.x,58,'fixed guide pulley')} ${small(336,360,'cable wrap')} ${small(825,480,'vertical guide rails')}`;
 }
 
 function eggbeater(t) {
