@@ -129,6 +129,14 @@
       { topic:'Vertex Form', level:'Medium', prompt:'What is the vertex of y = −2(x + 4)² + 9?', choices:['(4, 9)','(−4, 9)','(−4, −9)','(4, −9)'], answer:1, hint:'Compare the equation to y = a(x − h)² + k.', steps:['x + 4 = x − (−4)','h = −4 and k = 9','vertex: (−4, 9)'], reward:{icon:'🧠',name:"Lacey's Brain",text:'A brilliant brain currently taking a carefully supervised break from overthinking.'} },
       { topic:'Graphs', level:'Medium', prompt:'How many x-intercepts does y = x² − 4x + 3 have?', choices:['0','1','2','3'], answer:2, hint:'Set y equal to 0 and factor.', steps:['0 = x² − 4x + 3','0 = (x − 1)(x − 3)','x = 1 and x = 3, so there are 2 x-intercepts'], reward:{icon:'🪞',name:"Kaelynn's Handheld Mirror",text:"A handheld mirror polished enough to reflect every correct answer back at you. Mirror, mirror on the wall, what's the answer to them all?"} }
     ];
+    const TARGET_ANSWER_SLOTS = [3,2,1,0,3,2,1,0];
+    questions.forEach((question,index)=>{
+      const correct=question.choices[question.answer];
+      const choices=question.choices.filter((_,choiceIndex)=>choiceIndex!==question.answer);
+      choices.splice(TARGET_ANSWER_SLOTS[index],0,correct);
+      question.choices=choices;
+      question.answer=TARGET_ANSWER_SLOTS[index];
+    });
     const savedItems = [
       {icon:'👓',name:"Darrianna's Glasses",text:'The glasses that make every quadratic look a little clearer.'},
       {icon:'⛓️',name:"Adam's Gold Chain",text:'A gold chain with enough shine to make the correct method obvious.'},
