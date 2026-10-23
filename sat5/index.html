@@ -26,6 +26,7 @@
     .button-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
     .student-status { margin-top:17px; padding:12px; border-left:5px solid var(--gold); border-radius:8px; background:#fff7dc; color:#5b4307; line-height:1.4; font-weight:700; }
     .directions { margin-top:18px; padding:13px; border-radius:10px; background:var(--sky); border:1px solid #b9daee; line-height:1.43; }
+    header .directions { max-width:820px; margin-top:12px; color:var(--ink); }
     .directions strong { color:var(--navy); }
     details { margin-top:13px; border:1px solid #b9d1df; border-radius:10px; background:#f7fbfe; }
     summary { padding:11px 12px; color:var(--navy); cursor:pointer; font-weight:900; }
@@ -76,13 +77,12 @@
 <body>
   <main class="app">
     <header>
-      <section><h1>Quadratics Lost &amp; Found Activity — Period 5</h1><p>Work independently or with one partner. Solve each question to recover a lost item.</p></section>
+      <section><h1>Quadratics Lost &amp; Found Activity — Period 5</h1><p>Work independently or with one partner. Solve each question to recover a lost item.</p><section class="directions"><strong>Directions</strong><br>1. Each active tile is an equal part of your 100% score.<br>2. Check an answer; each different incorrect answer lowers that tile by 20%.<br>3. Use hints only if needed. Complete every active tile to save your score.</section></section>
       <section class="progress"><span class="progress-label">Your progress</span><span id="progressText">0 / 8</span><span id="scoreText">Score: 0%</span></section>
     </header>
     <section class="layout">
       <aside class="card controls">
-        <section class="directions"><strong>Directions</strong><br>1. Each active tile is an equal part of your 100% score.<br>2. Check an answer; each different incorrect answer lowers that tile by 20%.<br>3. Use hints only if needed. Complete every active tile to save your score.</section>
-        <h2 style="margin-top:18px">Activity setup</h2>
+        <h2>Activity setup</h2>
         <label>Your Name <span style="font-weight:400">(required)</span><input id="studentName" placeholder="First and last name" required></label>
         <label>Partner name <span style="font-weight:400">(leave blank if working alone)</span><input id="partnerName" placeholder="Partner's name"></label>
         <div class="button-row"><button class="btn" id="saveNames">Start Activity</button><button class="btn secondary" id="fullscreen">Full screen</button><button class="btn secondary" id="settingsButton">⚙ Settings</button></div>
