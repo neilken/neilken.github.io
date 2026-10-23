@@ -128,7 +128,7 @@
       { topic:'Graphs', level:'Medium', prompt:'How many x-intercepts does y = x² − 4x + 3 have?', choices:['0','1','2','3'], answer:2, hint:'Set y equal to 0 and factor.', steps:['0 = x² − 4x + 3','0 = (x − 1)(x − 3)','x = 1 and x = 3, so there are 2 x-intercepts'], reward:{icon:'🖊️',name:"Mr. Eilken's Lost Purple Marker",text:'The missing purple marker needed for the next graphing demonstration.'} }
     ];
     const ACTIVITY_PERIOD = 'Period 5';
-    const SCORE_ENDPOINT = '__SCORE_ENDPOINT__';
+    const SCORE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxkgmdgXSDnczZaH_-UJLAKM9bryC3IQZsRRxhbc1DcaGYxgYx5q2_7C2ypb30GXp46/exec';
     const WRONG_ANSWER_PENALTY_PERCENT = 20;
     const state = { completed:new Set(), selected:null, selectedChoice:null, marked:false, score:0, itemPoints:Array(questions.length).fill(100), attemptedChoices:new Set(), submitted:false };
     const $ = id => document.getElementById(id);
