@@ -128,6 +128,7 @@
       { topic:'Graphs', level:'Medium', prompt:'How many x-intercepts does y = x² − 4x + 3 have?', choices:['0','1','2','3'], answer:2, hint:'Set y equal to 0 and factor.', steps:['0 = x² − 4x + 3','0 = (x − 1)(x − 3)','x = 1 and x = 3, so there are 2 x-intercepts'], reward:{icon:'🖊️',name:"Mr. Eilken's Lost Purple Marker",text:'The missing purple marker needed for the next graphing demonstration.'} }
     ];
     const ACTIVITY_PERIOD = 'Period 5';
+    const SETTINGS_PASSWORD = '0530';
     const SCORE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxkgmdgXSDnczZaH_-UJLAKM9bryC3IQZsRRxhbc1DcaGYxgYx5q2_7C2ypb30GXp46/exec';
     const WRONG_ANSWER_PENALTY_PERCENT = 20;
     const state = { completed:new Set(), selected:null, selectedChoice:null, marked:false, score:0, itemPoints:Array(questions.length).fill(100), attemptedChoices:new Set(), submitted:false };
@@ -254,6 +255,9 @@
     $('nextQuestion').onclick=()=>{ dialog.close(); state.selected=null; };
     $('closeDialog').onclick=()=>dialog.close(); $('resetActivity').onclick=resetActivity;
     $('settingsButton').onclick=()=>{
+      const password=window.prompt('Enter the teacher settings password:');
+      if(password===null) return;
+      if(password!==SETTINGS_PASSWORD) { alert('Incorrect password.'); return; }
       renderPowerSettings();
       $('settingsDialog').showModal();
     };
