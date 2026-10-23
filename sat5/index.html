@@ -81,13 +81,13 @@
     </header>
     <section class="layout">
       <aside class="card controls">
-        <h2>Activity setup</h2>
+        <section class="directions"><strong>Directions</strong><br>1. Each active tile is an equal part of your 100% score.<br>2. Check an answer; each different incorrect answer lowers that tile by 20%.<br>3. Use hints only if needed. Complete every active tile to save your score.</section>
+        <h2 style="margin-top:18px">Activity setup</h2>
         <label>Your Name <span style="font-weight:400">(required)</span><input id="studentName" placeholder="First and last name" required></label>
         <label>Partner name <span style="font-weight:400">(leave blank if working alone)</span><input id="partnerName" placeholder="Partner's name"></label>
         <div class="button-row"><button class="btn" id="saveNames">Start Activity</button><button class="btn secondary" id="fullscreen">Full screen</button><button class="btn secondary" id="settingsButton">⚙ Settings</button></div>
         <section class="student-status" id="studentStatus">Enter your full name to unlock the activity.</section>
         <section class="student-status" id="recordStatus" aria-live="polite"></section>
-        <section class="directions"><strong>Directions</strong><br>1. Each active question begins at 100% and contributes equally to the final score.<br>2. Select an answer and check it.<br>3. Each distinct incorrect checked answer deducts 20% from that question only, to a minimum of 0%.<br>4. Use a hint only if you need one.<br>5. Complete every active tile correctly.</section>
         <div class="button-row"><button class="btn secondary" id="resetActivity">Start over</button></div>
       </aside>
       <section>
